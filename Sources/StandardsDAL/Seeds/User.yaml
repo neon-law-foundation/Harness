@@ -1,0 +1,6 @@
+lookup_fields:
+  - person_id
+records:
+  - person:
+      email: nick@shook.family
+    role: customer

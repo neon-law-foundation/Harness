@@ -1,0 +1,480 @@
+openapi: 3.1.0
+info:
+  title: Sagebrush Standards API
+  description: API for managing legal standards, entities, credentials, and notations
+  version: 1.0.0
+  contact:
+    name: Neon Law Foundation
+    url: https://github.com/neon-law-foundation/SagebrushStandards
+
+servers:
+  - url: https://api.sagebrush.services
+    description: Production API
+  - url: https://api-staging.sagebrush.services
+    description: Staging API
+
+tags:
+  - name: persons
+    description: Person management operations
+  - name: entities
+    description: Entity management operations
+  - name: credentials
+    description: Professional credentials operations
+  - name: jurisdictions
+    description: Jurisdiction reference data
+  - name: notations
+    description: Legal notation and document management
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Health check endpoint
+      description: Returns the health status of the API
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /persons:
+    get:
+      operationId: listPersons
+      summary: List all persons
+      description: Retrieve a paginated list of all persons
+      tags:
+        - persons
+      parameters:
+        - $ref: '#/components/parameters/PageParameter'
+        - $ref: '#/components/parameters/LimitParameter'
+      responses:
+        '200':
+          description: List of persons
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonList'
+    post:
+      operationId: createPerson
+      summary: Create a new person
+      description: Create a new person record
+      tags:
+        - persons
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePersonRequest'
+      responses:
+        '201':
+          description: Person created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /persons/{personId}:
+    parameters:
+      - $ref: '#/components/parameters/PersonIdParameter'
+    get:
+      operationId: getPerson
+      summary: Get person by ID
+      description: Retrieve a specific person by their ID
+      tags:
+        - persons
+      responses:
+        '200':
+          description: Person details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      operationId: updatePerson
+      summary: Update person
+      description: Update an existing person's information
+      tags:
+        - persons
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePersonRequest'
+      responses:
+        '200':
+          description: Person updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /entities:
+    get:
+      operationId: listEntities
+      summary: List all entities
+      description: Retrieve a paginated list of all entities
+      tags:
+        - entities
+      parameters:
+        - $ref: '#/components/parameters/PageParameter'
+        - $ref: '#/components/parameters/LimitParameter'
+      responses:
+        '200':
+          description: List of entities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityList'
+    post:
+      operationId: createEntity
+      summary: Create a new entity
+      description: Create a new legal entity
+      tags:
+        - entities
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntityRequest'
+      responses:
+        '201':
+          description: Entity created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /entities/{entityId}:
+    parameters:
+      - $ref: '#/components/parameters/EntityIdParameter'
+    get:
+      operationId: getEntity
+      summary: Get entity by ID
+      description: Retrieve a specific entity by ID
+      tags:
+        - entities
+      responses:
+        '200':
+          description: Entity details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entity'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /credentials:
+    get:
+      operationId: listCredentials
+      summary: List all credentials
+      description: Retrieve a paginated list of all professional credentials
+      tags:
+        - credentials
+      parameters:
+        - $ref: '#/components/parameters/PageParameter'
+        - $ref: '#/components/parameters/LimitParameter'
+        - name: personId
+          in: query
+          description: Filter by person ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialList'
+
+  /jurisdictions:
+    get:
+      operationId: listJurisdictions
+      summary: List all jurisdictions
+      description: Retrieve a list of all available jurisdictions
+      tags:
+        - jurisdictions
+      responses:
+        '200':
+          description: List of jurisdictions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JurisdictionList'
+
+components:
+  parameters:
+    PageParameter:
+      name: page
+      in: query
+      description: Page number for pagination
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    LimitParameter:
+      name: limit
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+    PersonIdParameter:
+      name: personId
+      in: path
+      required: true
+      description: The unique identifier of the person
+      schema:
+        type: string
+        format: uuid
+
+    EntityIdParameter:
+      name: entityId
+      in: path
+      required: true
+      description: The unique identifier of the entity
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [healthy]
+        timestamp:
+          type: string
+          format: date-time
+
+    Person:
+      type: object
+      required:
+        - id
+        - email
+        - name
+        - insertedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        insertedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreatePersonRequest:
+      type: object
+      required:
+        - email
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          minLength: 1
+
+    UpdatePersonRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          minLength: 1
+
+    PersonList:
+      type: object
+      required:
+        - persons
+        - page
+        - totalPages
+      properties:
+        persons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Person'
+        page:
+          type: integer
+        totalPages:
+          type: integer
+
+    Entity:
+      type: object
+      required:
+        - id
+        - name
+        - entityTypeId
+        - insertedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        entityTypeId:
+          type: string
+          format: uuid
+        insertedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateEntityRequest:
+      type: object
+      required:
+        - name
+        - entityTypeId
+      properties:
+        name:
+          type: string
+          minLength: 1
+        entityTypeId:
+          type: string
+          format: uuid
+
+    EntityList:
+      type: object
+      required:
+        - entities
+        - page
+        - totalPages
+      properties:
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+        page:
+          type: integer
+        totalPages:
+          type: integer
+
+    Credential:
+      type: object
+      required:
+        - id
+        - personId
+        - jurisdictionId
+        - licenseNumber
+        - insertedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        personId:
+          type: string
+          format: uuid
+        jurisdictionId:
+          type: string
+          format: uuid
+        licenseNumber:
+          type: string
+        insertedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CredentialList:
+      type: object
+      required:
+        - credentials
+        - page
+        - totalPages
+      properties:
+        credentials:
+          type: array
+          items:
+            $ref: '#/components/schemas/Credential'
+        page:
+          type: integer
+        totalPages:
+          type: integer
+
+    Jurisdiction:
+      type: object
+      required:
+        - id
+        - name
+        - code
+        - jurisdictionType
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+        jurisdictionType:
+          type: string
+
+    JurisdictionList:
+      type: object
+      required:
+        - jurisdictions
+      properties:
+        jurisdictions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Jurisdiction'
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
