@@ -1,4 +1,3 @@
-import Configuration
 import Foundation
 import Logging
 import OpenAPILambda
@@ -6,15 +5,12 @@ import OpenAPIRuntime
 
 /// Unified Standards API entry point
 ///
-/// Uses Swift Configuration to read the ENV environment variable and
-/// automatically choose the appropriate runtime (Vapor for local development,
-/// Lambda for production).
+/// Reads the ENV environment variable and automatically chooses the appropriate
+/// runtime (Vapor for local development, Lambda for production).
 @main
 struct StandardsAPI {
     static func main() async throws {
-        // Use Swift Configuration to read environment
-        let config = ConfigReader(provider: EnvironmentVariablesProvider())
-        let environment = config.string(forKey: "env", default: "development")
+        let environment = ProcessInfo.processInfo.environment["env"] ?? "development"
 
         // Choose runtime based on ENV variable
         switch environment {

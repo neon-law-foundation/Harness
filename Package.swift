@@ -20,7 +20,6 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-openapi-generator.git", from: "1.10.3"),
         .package(url: "https://github.com/apple/swift-openapi-runtime.git", from: "1.9.0"),
         .package(url: "https://github.com/swift-server/swift-openapi-vapor.git", from: "1.0.1"),
-        .package(url: "https://github.com/apple/swift-configuration.git", from: "1.0.0"),
     ],
     targets: [
         .target(
@@ -70,7 +69,6 @@ let package = Package(
                 .product(name: "OpenAPILambda", package: "swift-openapi-lambda"),
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "Configuration", package: "swift-configuration"),
             ],
             swiftSettings: [
                 .unsafeFlags(["-parse-as-library"])
@@ -87,7 +85,6 @@ let package = Package(
                 .product(name: "OpenAPIVapor", package: "swift-openapi-vapor"),
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "Configuration", package: "swift-configuration"),
             ],
             resources: [
                 .copy("Public")

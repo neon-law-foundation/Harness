@@ -1,4 +1,3 @@
-import Configuration
 import Foundation
 import Logging
 import OpenAPIRuntime
@@ -8,14 +7,12 @@ import Vapor
 
 /// Local development server for Standards API
 ///
-/// Uses Swift Configuration to read the ENV environment variable.
+/// Reads the ENV environment variable.
 /// Runs Vapor HTTP server for local development with Swagger UI.
 @main
 struct StandardsAPIServer {
     static func main() async throws {
-        // Use Swift Configuration to verify environment
-        let config = ConfigReader(provider: EnvironmentVariablesProvider())
-        let environment = config.string(forKey: "env", default: "development")
+        let environment = ProcessInfo.processInfo.environment["env"] ?? "development"
 
         // Log the detected environment
         let logger = Logger(label: "com.sagebrush.standards.server")
