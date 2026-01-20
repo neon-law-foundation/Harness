@@ -22,7 +22,8 @@ jobs:
     steps:
       - uses: "actions/checkout@v4"
 
-      - name: Install Swift toolchain
+      - name: Install Swift toolchain (Linux only)
+        if: runner.os == 'Linux'
         uses: vapor/swiftly-action@v0.2
         with:
           toolchain: latest
