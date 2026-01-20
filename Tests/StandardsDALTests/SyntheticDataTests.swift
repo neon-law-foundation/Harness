@@ -386,7 +386,7 @@ struct SyntheticDataTests {
             address.street = "Hauptstraße 123"
             address.city = "Berlin"
             address.state = nil  // Germany doesn't use states
-            address.zip = nil    // Different postal system
+            address.zip = nil  // Different postal system
             address.country = "Germany"
             address.isVerified = true
             try await address.save(on: db)
