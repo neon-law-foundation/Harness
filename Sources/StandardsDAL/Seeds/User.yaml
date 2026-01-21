@@ -2,5 +2,5 @@ lookup_fields:
   - person_id
 records:
   - person:
-      email: nick@shook.family
+      email: nick@neonlaw.com
     role: customer
