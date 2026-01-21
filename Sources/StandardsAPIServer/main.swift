@@ -1,4 +1,3 @@
-import Configuration
 import Foundation
 import Logging
 import OpenAPIRuntime
@@ -8,14 +7,12 @@ import Vapor
 
 /// Local development server for Standards API
 ///
-/// Uses Swift Configuration to read the ENV environment variable.
+/// Reads the ENV environment variable.
 /// Runs Vapor HTTP server for local development with Swagger UI.
 @main
 struct StandardsAPIServer {
     static func main() async throws {
-        // Use Swift Configuration to verify environment
-        let config = ConfigReader(provider: EnvironmentVariablesProvider())
-        let environment = config.string(forKey: "env", default: "development")
+        let environment = ProcessInfo.processInfo.environment["env"] ?? "development"
 
         // Log the detected environment
         let logger = Logger(label: "com.sagebrush.standards.server")
@@ -109,7 +106,10 @@ struct StandardsAPIHandler: APIProtocol {
 
     // MARK: - Health Check
 
-    func getHealth(_ input: Operations.getHealth.Input) async throws -> Operations.getHealth
+    func getHealth(
+        _ input: Operations.getHealth.Input
+    ) async throws
+        -> Operations.getHealth
         .Output
     {
         logger.info("Health check requested")
@@ -127,7 +127,10 @@ struct StandardsAPIHandler: APIProtocol {
 
     // MARK: - Persons
 
-    func listPersons(_ input: Operations.listPersons.Input) async throws -> Operations
+    func listPersons(
+        _ input: Operations.listPersons.Input
+    ) async throws
+        -> Operations
         .listPersons.Output
     {
         let page = input.query.page ?? 1
@@ -149,7 +152,10 @@ struct StandardsAPIHandler: APIProtocol {
         )
     }
 
-    func createPerson(_ input: Operations.createPerson.Input) async throws -> Operations
+    func createPerson(
+        _ input: Operations.createPerson.Input
+    ) async throws
+        -> Operations
         .createPerson.Output
     {
         guard case let .json(request) = input.body else {
@@ -165,10 +171,13 @@ struct StandardsAPIHandler: APIProtocol {
             )
         }
 
-        logger.info("Creating person", metadata: [
-            "email": "\(request.email)",
-            "name": "\(request.name)",
-        ])
+        logger.info(
+            "Creating person",
+            metadata: [
+                "email": "\(request.email)",
+                "name": "\(request.name)",
+            ]
+        )
 
         // TODO: Implement actual database insertion
         let person = Components.Schemas.Person(
@@ -186,7 +195,10 @@ struct StandardsAPIHandler: APIProtocol {
         )
     }
 
-    func getPerson(_ input: Operations.getPerson.Input) async throws -> Operations.getPerson
+    func getPerson(
+        _ input: Operations.getPerson.Input
+    ) async throws
+        -> Operations.getPerson
         .Output
     {
         let personId = input.path.personId
@@ -205,7 +217,10 @@ struct StandardsAPIHandler: APIProtocol {
         )
     }
 
-    func updatePerson(_ input: Operations.updatePerson.Input) async throws -> Operations
+    func updatePerson(
+        _ input: Operations.updatePerson.Input
+    ) async throws
+        -> Operations
         .updatePerson.Output
     {
         let personId = input.path.personId
@@ -239,7 +254,10 @@ struct StandardsAPIHandler: APIProtocol {
 
     // MARK: - Entities
 
-    func listEntities(_ input: Operations.listEntities.Input) async throws -> Operations
+    func listEntities(
+        _ input: Operations.listEntities.Input
+    ) async throws
+        -> Operations
         .listEntities.Output
     {
         let page = input.query.page ?? 1
@@ -260,7 +278,10 @@ struct StandardsAPIHandler: APIProtocol {
         )
     }
 
-    func createEntity(_ input: Operations.createEntity.Input) async throws -> Operations
+    func createEntity(
+        _ input: Operations.createEntity.Input
+    ) async throws
+        -> Operations
         .createEntity.Output
     {
         guard case let .json(request) = input.body else {
@@ -293,7 +314,10 @@ struct StandardsAPIHandler: APIProtocol {
         )
     }
 
-    func getEntity(_ input: Operations.getEntity.Input) async throws -> Operations.getEntity
+    func getEntity(
+        _ input: Operations.getEntity.Input
+    ) async throws
+        -> Operations.getEntity
         .Output
     {
         let entityId = input.path.entityId
@@ -313,7 +337,10 @@ struct StandardsAPIHandler: APIProtocol {
 
     // MARK: - Credentials
 
-    func listCredentials(_ input: Operations.listCredentials.Input) async throws -> Operations
+    func listCredentials(
+        _ input: Operations.listCredentials.Input
+    ) async throws
+        -> Operations
         .listCredentials.Output
     {
         let page = input.query.page ?? 1
@@ -336,9 +363,9 @@ struct StandardsAPIHandler: APIProtocol {
 
     // MARK: - Jurisdictions
 
-    func listJurisdictions(_ input: Operations.listJurisdictions.Input) async throws ->
-        Operations.listJurisdictions.Output
-    {
+    func listJurisdictions(
+        _ input: Operations.listJurisdictions.Input
+    ) async throws -> Operations.listJurisdictions.Output {
         logger.info("Listing jurisdictions")
 
         return .ok(

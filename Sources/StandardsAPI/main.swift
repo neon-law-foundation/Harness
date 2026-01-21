@@ -1,4 +1,3 @@
-import Configuration
 import Foundation
 import Logging
 import OpenAPILambda
@@ -6,15 +5,12 @@ import OpenAPIRuntime
 
 /// Unified Standards API entry point
 ///
-/// Uses Swift Configuration to read the ENV environment variable and
-/// automatically choose the appropriate runtime (Vapor for local development,
-/// Lambda for production).
+/// Reads the ENV environment variable and automatically chooses the appropriate
+/// runtime (Vapor for local development, Lambda for production).
 @main
 struct StandardsAPI {
     static func main() async throws {
-        // Use Swift Configuration to read environment
-        let config = ConfigReader(provider: EnvironmentVariablesProvider())
-        let environment = config.string(forKey: "env", default: "development")
+        let environment = ProcessInfo.processInfo.environment["env"] ?? "development"
 
         // Choose runtime based on ENV variable
         switch environment {
@@ -44,63 +40,90 @@ private struct LambdaAdapter: APIProtocol, OpenAPILambdaHttpApi {
     }
 
     // Forward all API methods to the shared implementation
-    func getHealth(_ input: Operations.getHealth.Input) async throws -> Operations.getHealth
+    func getHealth(
+        _ input: Operations.getHealth.Input
+    ) async throws
+        -> Operations.getHealth
         .Output
     {
         try await implementation.getHealth(input)
     }
 
-    func listPersons(_ input: Operations.listPersons.Input) async throws -> Operations
+    func listPersons(
+        _ input: Operations.listPersons.Input
+    ) async throws
+        -> Operations
         .listPersons.Output
     {
         try await implementation.listPersons(input)
     }
 
-    func createPerson(_ input: Operations.createPerson.Input) async throws -> Operations
+    func createPerson(
+        _ input: Operations.createPerson.Input
+    ) async throws
+        -> Operations
         .createPerson.Output
     {
         try await implementation.createPerson(input)
     }
 
-    func getPerson(_ input: Operations.getPerson.Input) async throws -> Operations.getPerson
+    func getPerson(
+        _ input: Operations.getPerson.Input
+    ) async throws
+        -> Operations.getPerson
         .Output
     {
         try await implementation.getPerson(input)
     }
 
-    func updatePerson(_ input: Operations.updatePerson.Input) async throws -> Operations
+    func updatePerson(
+        _ input: Operations.updatePerson.Input
+    ) async throws
+        -> Operations
         .updatePerson.Output
     {
         try await implementation.updatePerson(input)
     }
 
-    func listEntities(_ input: Operations.listEntities.Input) async throws -> Operations
+    func listEntities(
+        _ input: Operations.listEntities.Input
+    ) async throws
+        -> Operations
         .listEntities.Output
     {
         try await implementation.listEntities(input)
     }
 
-    func createEntity(_ input: Operations.createEntity.Input) async throws -> Operations
+    func createEntity(
+        _ input: Operations.createEntity.Input
+    ) async throws
+        -> Operations
         .createEntity.Output
     {
         try await implementation.createEntity(input)
     }
 
-    func getEntity(_ input: Operations.getEntity.Input) async throws -> Operations.getEntity
+    func getEntity(
+        _ input: Operations.getEntity.Input
+    ) async throws
+        -> Operations.getEntity
         .Output
     {
         try await implementation.getEntity(input)
     }
 
-    func listCredentials(_ input: Operations.listCredentials.Input) async throws -> Operations
+    func listCredentials(
+        _ input: Operations.listCredentials.Input
+    ) async throws
+        -> Operations
         .listCredentials.Output
     {
         try await implementation.listCredentials(input)
     }
 
-    func listJurisdictions(_ input: Operations.listJurisdictions.Input) async throws ->
-        Operations.listJurisdictions.Output
-    {
+    func listJurisdictions(
+        _ input: Operations.listJurisdictions.Input
+    ) async throws -> Operations.listJurisdictions.Output {
         try await implementation.listJurisdictions(input)
     }
 }
@@ -116,5 +139,6 @@ private func runVapor() async throws {
     // Import Vapor dynamically only when needed
     // This keeps Lambda deployments lightweight
     fatalError(
-        "Vapor runtime not available in StandardsAPI target. Use StandardsAPIServer instead.")
+        "Vapor runtime not available in StandardsAPI target. Use StandardsAPIServer instead."
+    )
 }

@@ -90,7 +90,8 @@ struct FormatCommandTests {
 
         let testFile = testDir.appendingPathComponent("longlines.md")
 
-        let longLine = "This is a very long line that definitely exceeds one hundred and twenty characters and should be wrapped by pandoc when formatting the markdown file for proper compliance with linting rules."
+        let longLine =
+            "This is a very long line that definitely exceeds one hundred and twenty characters and should be wrapped by pandoc when formatting the markdown file for proper compliance with linting rules."
 
         let content = """
             # Test

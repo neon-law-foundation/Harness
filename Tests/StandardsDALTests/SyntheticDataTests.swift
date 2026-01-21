@@ -386,7 +386,7 @@ struct SyntheticDataTests {
             address.street = "Hauptstraße 123"
             address.city = "Berlin"
             address.state = nil  // Germany doesn't use states
-            address.zip = nil    // Different postal system
+            address.zip = nil  // Different postal system
             address.country = "Germany"
             address.isVerified = true
             try await address.save(on: db)
@@ -519,7 +519,7 @@ struct SyntheticDataTests {
         }
     }
 
-    @Test("Cascade delete behavior - deleting person does not cascade")
+    @Test("Cascade delete behavior - deleting person with credentials fails")
     func testNoCascadeDelete() async throws {
         try await withDatabase { db in
             let person = Person()
@@ -539,27 +539,23 @@ struct SyntheticDataTests {
             credential.licenseNumber = "ME-999"
             try await credential.save(on: db)
 
-            // Delete person - credential should remain (or fail due to foreign key)
-            try await person.delete(on: db)
+            // Delete person - should fail due to foreign key constraint
+            // SQLite enforces foreign key constraints, preventing orphaned credentials
+            await #expect(throws: (any Error).self) {
+                try await person.delete(on: db)
+            }
 
-            // Verify person is gone
+            // Verify person still exists (delete was prevented)
             let foundPerson = try await Person.query(on: db)
                 .filter(\.$id == person.id!)
                 .first()
-            #expect(foundPerson == nil)
+            #expect(foundPerson != nil)
 
-            // Credential may either remain or be deleted depending on foreign key cascade rules
-            // This test documents the behavior
+            // Credential should still exist
             let foundCredential = try await Credential.query(on: db)
                 .filter(\.$id == credential.id!)
                 .first()
-
-            // Document what happens - this will vary based on DB constraints
-            // SQLite may allow orphaned records, PostgreSQL might enforce cascade
-            if foundCredential != nil {
-                // Credential remains as orphaned record
-                #expect(foundCredential?.id == credential.id)
-            }
+            #expect(foundCredential != nil)
         }
     }
 }

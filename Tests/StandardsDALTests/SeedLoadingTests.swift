@@ -60,7 +60,7 @@ struct SeedLoadingTests {
 
             // Find Nick's person
             let nick = try await Person.query(on: app.db)
-                .filter(\.$email == "nick@shook.family")
+                .filter(\.$email == "nick@neonlaw.com")
                 .first()
 
             #expect(nick != nil, "Nick's person record not found")
