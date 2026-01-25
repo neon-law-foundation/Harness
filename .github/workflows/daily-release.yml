@@ -1,0 +1,244 @@
+---
+name: Daily Release
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    # Allow manual triggering
+
+concurrency:
+  group: daily-release
+  cancel-in-progress: false
+
+env:
+  SWIFT_VERSION: "6.2"
+
+jobs:
+  build-and-release:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate version
+        id: version
+        run: |
+          VERSION=$(date +"%y.%m.%d")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Generated version: $VERSION"
+
+      - name: Check if release already exists
+        id: check_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if gh release view "v$VERSION" > /dev/null 2>&1; then
+            echo "Release v$VERSION already exists, skipping"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Release v$VERSION does not exist, proceeding"
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Swift toolchain
+        if: steps.check_release.outputs.exists == 'false'
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Cache Swift Package Manager dependencies
+        if: steps.check_release.outputs.exists == 'false'
+        uses: actions/cache@v4
+        with:
+          path: |
+            .build
+            ~/.cache/org.swift.swiftpm
+          key: spm-macos-release-${{ hashFiles('Package.swift', 'Package.resolved') }}
+          restore-keys: |
+            spm-macos-release-
+
+      - name: Build for Apple Silicon (arm64)
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          swift build -c release --product StandardsCLI --arch arm64
+          mkdir -p dist/arm64
+          cp .build/release/StandardsCLI dist/arm64/standards
+
+      - name: Build for Intel (x86_64)
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          swift build -c release --product StandardsCLI --arch x86_64
+          mkdir -p dist/x86_64
+          cp .build/release/StandardsCLI dist/x86_64/standards
+
+      - name: Create universal binary
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          mkdir -p dist/universal
+          lipo -create \
+            dist/arm64/standards \
+            dist/x86_64/standards \
+            -output dist/universal/standards
+          # Verify the universal binary
+          lipo -info dist/universal/standards
+
+      - name: Verify binaries
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          echo "Verifying arm64 binary..."
+          file dist/arm64/standards
+          dist/arm64/standards --help || true
+
+          echo "Verifying x86_64 binary..."
+          file dist/x86_64/standards
+
+          echo "Verifying universal binary..."
+          file dist/universal/standards
+          dist/universal/standards --help
+
+      - name: Package binaries
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p release
+
+          # Package arm64
+          tar -czf "release/standards-${VERSION}-macos-arm64.tar.gz" \
+            -C dist/arm64 standards
+
+          # Package x86_64
+          tar -czf "release/standards-${VERSION}-macos-x86_64.tar.gz" \
+            -C dist/x86_64 standards
+
+          # Package universal
+          tar -czf "release/standards-${VERSION}-macos-universal.tar.gz" \
+            -C dist/universal standards
+
+          # Generate checksums
+          cd release
+          shasum -a 256 *.tar.gz > checksums.txt
+          cat checksums.txt
+
+      - name: Create GitHub Release
+        if: steps.check_release.outputs.exists == 'false'
+        id: create_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          gh release create "v$VERSION" \
+            --title "Standards CLI v$VERSION" \
+            --notes "Daily automated release for $(date +%Y-%m-%d).
+
+          ## Installation
+
+          ### Homebrew (Recommended)
+          \`\`\`bash
+          brew tap neon-law-foundation/tap
+          brew install standards
+          \`\`\`
+
+          ### Manual Download
+          Download the appropriate binary for your system:
+          - **Apple Silicon (M1/M2/M3)**: \`standards-${VERSION}-macos-arm64.tar.gz\`
+          - **Intel**: \`standards-${VERSION}-macos-x86_64.tar.gz\`
+          - **Universal**: \`standards-${VERSION}-macos-universal.tar.gz\`
+
+          Then extract and move to your PATH:
+          \`\`\`bash
+          tar -xzf standards-${VERSION}-macos-universal.tar.gz
+          sudo mv standards /usr/local/bin/
+          \`\`\`
+          " \
+            release/standards-*.tar.gz \
+            release/checksums.txt
+
+      - name: Get universal binary SHA256
+        if: steps.check_release.outputs.exists == 'false'
+        id: sha256
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          SHA256=$(shasum -a 256 "release/standards-${VERSION}-macos-universal.tar.gz" | awk '{print $1}')
+          echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
+          echo "SHA256: $SHA256"
+
+      - name: Calculate checksums for formula
+        if: steps.check_release.outputs.exists == 'false'
+        id: checksums
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ARM64_SHA=$(shasum -a 256 "release/standards-${VERSION}-macos-arm64.tar.gz" | awk '{print $1}')
+          X86_64_SHA=$(shasum -a 256 "release/standards-${VERSION}-macos-x86_64.tar.gz" | awk '{print $1}')
+          echo "arm64_sha=$ARM64_SHA" >> "$GITHUB_OUTPUT"
+          echo "x86_64_sha=$X86_64_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Update Homebrew formula
+        if: steps.check_release.outputs.exists == 'false'
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          if [ -z "$HOMEBREW_TAP_TOKEN" ]; then
+            echo "::warning::HOMEBREW_TAP_TOKEN is not set. Skipping Homebrew formula update."
+            echo "Please add HOMEBREW_TAP_TOKEN secret to enable automatic formula updates."
+            exit 0
+          fi
+
+          VERSION="${{ steps.version.outputs.version }}"
+          ARM64_SHA="${{ steps.checksums.outputs.arm64_sha }}"
+          X86_64_SHA="${{ steps.checksums.outputs.x86_64_sha }}"
+
+          # Clone the tap repository
+          git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/neon-law-foundation/homebrew-tap.git" tap
+
+          # Generate updated formula (no leading whitespace)
+          cat > tap/Formula/standards.rb << 'FORMULA_EOF'
+          class Standards < Formula
+            desc "Legal standards CLI for Markdown linting, PDF conversion, and document management"
+            homepage "https://github.com/neon-law-foundation/SagebrushStandards"
+            version "VERSION_PLACEHOLDER"
+            license "Apache-2.0"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/neon-law-foundation/SagebrushStandards/releases/download/vVERSION_PLACEHOLDER/standards-VERSION_PLACEHOLDER-macos-arm64.tar.gz"
+                sha256 "ARM64_SHA_PLACEHOLDER"
+              end
+              on_intel do
+                url "https://github.com/neon-law-foundation/SagebrushStandards/releases/download/vVERSION_PLACEHOLDER/standards-VERSION_PLACEHOLDER-macos-x86_64.tar.gz"
+                sha256 "X86_64_SHA_PLACEHOLDER"
+              end
+            end
+
+            def install
+              bin.install "standards"
+            end
+
+            test do
+              assert_match "standards", shell_output("#{bin}/standards --version")
+            end
+          end
+          FORMULA_EOF
+
+          # Replace placeholders with actual values
+          sed -i '' "s/VERSION_PLACEHOLDER/${VERSION}/g" tap/Formula/standards.rb
+          sed -i '' "s/ARM64_SHA_PLACEHOLDER/${ARM64_SHA}/g" tap/Formula/standards.rb
+          sed -i '' "s/X86_64_SHA_PLACEHOLDER/${X86_64_SHA}/g" tap/Formula/standards.rb
+
+          # Remove leading whitespace from heredoc (caused by YAML indentation)
+          sed -i '' 's/^          //' tap/Formula/standards.rb
+
+          # Show the generated formula
+          echo "Generated formula:"
+          cat tap/Formula/standards.rb
+
+          # Commit and push
+          cd tap
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add Formula/standards.rb
+          git commit -m "chore: update standards to v${VERSION}"
+          git push
