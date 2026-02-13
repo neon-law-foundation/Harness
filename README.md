@@ -1,5 +1,7 @@
 # Sagebrush Standards
 
+![Swift 6.0](https://img.shields.io/badge/Swift-6.0-orange.svg)
+
 Questionnaires, Workflows, and Templates together to create computable
 contracts.
 
