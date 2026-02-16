@@ -4,8 +4,6 @@ name: Continuous Integration
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -42,7 +40,7 @@ jobs:
             spm-${{ runner.os }}-
 
       - name: Run Swift Build (Strict - Fail on Warnings)
-        run: swift build --jobs 1 -Xswiftc -warnings-as-errors
+        run: swift build -Xswiftc -warnings-as-errors
 
       - name: Run tests
         run: swift test
