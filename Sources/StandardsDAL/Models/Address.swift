@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 /// Represents a physical address linked to either an entity or person in the directory schema.
 ///

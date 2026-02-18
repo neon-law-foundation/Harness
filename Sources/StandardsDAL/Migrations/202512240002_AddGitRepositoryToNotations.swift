@@ -1,4 +1,4 @@
-import Fluent
+import FluentKit
 import SQLKit
 
 /// Adds git repository tracking fields to the notations table.

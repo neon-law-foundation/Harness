@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 public struct CredentialRepository: Sendable {
 

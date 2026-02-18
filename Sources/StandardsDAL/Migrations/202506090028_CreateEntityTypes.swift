@@ -1,4 +1,4 @@
-import Fluent
+import FluentKit
 
 struct CreateEntityTypes: AsyncMigration {
     func prepare(on database: any Database) async throws {

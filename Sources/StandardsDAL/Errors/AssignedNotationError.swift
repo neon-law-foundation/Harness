@@ -1,5 +1,4 @@
 import Foundation
-import Vapor
 
 /// Errors related to assigned notation operations and validation.
 public enum AssignedNotationError: Error, LocalizedError {
@@ -24,6 +23,9 @@ public enum AssignedNotationError: Error, LocalizedError {
 
     /// Active assignment already exists for this notation and respondents.
     case activeAssignmentExists(notationID: Int32, personID: Int32?, entityID: Int32?)
+
+    /// Assignment is invalid for the notation's respondent type.
+    case invalidAssignment(String)
 
     public var errorDescription: String? {
         switch self {
@@ -52,15 +54,8 @@ public enum AssignedNotationError: Error, LocalizedError {
         case .activeAssignmentExists(let notationID, let personID, let entityID):
             return
                 "Active assignment already exists for notation \(notationID), person \(personID ?? 0), entity \(entityID ?? 0)"
-        }
-    }
-
-    public var httpStatus: HTTPStatus {
-        switch self {
-        case .notationNotFound, .noLatestVersionFound:
-            return .notFound
-        case .outdatedVersion, .activeAssignmentExists:
-            return .conflict
+        case .invalidAssignment(let reason):
+            return "Invalid assignment: \(reason)"
         }
     }
 }

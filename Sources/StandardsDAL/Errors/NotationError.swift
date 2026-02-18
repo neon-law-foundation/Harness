@@ -1,5 +1,4 @@
 import Foundation
-import Vapor
 
 /// Errors related to notation operations and version management.
 public enum NotationError: Error, LocalizedError {
@@ -48,14 +47,4 @@ public enum NotationError: Error, LocalizedError {
         }
     }
 
-    public var httpStatus: HTTPStatus {
-        switch self {
-        case .versionAlreadyExists:
-            return .conflict
-        case .notFound, .noVersionsFound:
-            return .notFound
-        case .validationFailed, .invalidFrontmatter, .missingRequiredField:
-            return .badRequest
-        }
-    }
 }

@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 /// Service responsible for creating and managing assigned notations with version validation.
 public actor AssignedNotationService {

@@ -1,4 +1,4 @@
-import Fluent
+import FluentKit
 
 protocol RepositoryProtocol {
     associatedtype ID: Hashable

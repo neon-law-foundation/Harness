@@ -1,4 +1,6 @@
-import Fluent
+import FluentKit
+import FluentSQL
+import SQLKit
 
 /// Adds a version field to the notations table to track git commit SHAs.
 ///

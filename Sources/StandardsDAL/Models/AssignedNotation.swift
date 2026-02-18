@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 /// Represents the lifecycle state of an assigned notation.
 ///
@@ -165,7 +164,7 @@ public final class AssignedNotation: Model, @unchecked Sendable {
     /// Call this method before saving a new assignment to ensure data integrity.
     ///
     /// - Parameter database: The database connection to use for loading the notation.
-    /// - Throws: `Abort` with `.badRequest` status if the IDs don't match the respondent type requirements.
+    /// - Throws: `AssignedNotationError.invalidAssignment` if the IDs don't match the respondent type requirements.
     public func validate(on database: Database) async throws {
         // Load the notation to check respondent type
         try await self.$notation.load(on: database)
@@ -176,26 +175,20 @@ public final class AssignedNotation: Model, @unchecked Sendable {
         switch self.notation.respondentType {
         case .person:
             guard personID != nil && entityID == nil else {
-                throw Abort(
-                    .badRequest,
-                    reason:
-                        "For respondent type 'person', person_id must be set and entity_id must be nil"
+                throw AssignedNotationError.invalidAssignment(
+                    "For respondent type 'person', person_id must be set and entity_id must be nil"
                 )
             }
         case .entity:
             guard entityID != nil && personID == nil else {
-                throw Abort(
-                    .badRequest,
-                    reason:
-                        "For respondent type 'entity', entity_id must be set and person_id must be nil"
+                throw AssignedNotationError.invalidAssignment(
+                    "For respondent type 'entity', entity_id must be set and person_id must be nil"
                 )
             }
         case .personAndEntity:
             guard personID != nil && entityID != nil else {
-                throw Abort(
-                    .badRequest,
-                    reason:
-                        "For respondent type 'person_and_entity', both person_id and entity_id must be set"
+                throw AssignedNotationError.invalidAssignment(
+                    "For respondent type 'person_and_entity', both person_id and entity_id must be set"
                 )
             }
         }

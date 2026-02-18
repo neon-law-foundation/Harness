@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 public enum UserRole: String, Codable, CaseIterable, Sendable {
     case customer = "customer"
@@ -9,7 +8,7 @@ public enum UserRole: String, Codable, CaseIterable, Sendable {
 }
 
 // User accounts for authentication and authorization
-public final class User: Model, Content, Authenticatable, @unchecked Sendable {
+public final class User: Model, @unchecked Sendable {
     public static let schema = "users"
 
     // Unique identifier for the user (UUIDv4)

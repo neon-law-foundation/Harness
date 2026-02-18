@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 /// Represents a mailbox at a physical address in the mail schema.
 ///

@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 // Directory of people with their basic contact information
 public final class Person: Model, @unchecked Sendable {

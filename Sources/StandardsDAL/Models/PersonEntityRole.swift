@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 // Enum for the role types
 public enum PersonEntityRoleType: String, Codable, CaseIterable, Sendable {

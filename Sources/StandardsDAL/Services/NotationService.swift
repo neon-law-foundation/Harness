@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 /// Service responsible for notation version management and validation.
 public actor NotationService {
