@@ -1,4 +1,4 @@
-import Fluent
+import FluentKit
 import SQLKit
 
 struct CreateAssignedNotations: AsyncMigration {

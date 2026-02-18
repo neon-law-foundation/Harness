@@ -1,5 +1,5 @@
-import Fluent
-import Vapor
+import FluentKit
+import Foundation
 
 public final class Credential: Model, @unchecked Sendable {
     public static let schema = "credentials"

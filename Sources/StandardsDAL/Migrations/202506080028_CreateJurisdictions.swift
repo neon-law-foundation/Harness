@@ -1,6 +1,4 @@
-import Fluent
-import FluentPostgresDriver
-import SQLKit
+import FluentKit
 
 struct CreateJurisdictions: AsyncMigration {
     func prepare(on database: any Database) async throws {

@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 /// Join table between legal credentials and projects tracking disclosure periods.
 ///

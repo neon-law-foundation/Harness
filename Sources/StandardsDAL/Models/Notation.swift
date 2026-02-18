@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 /// Defines who can be assigned a notation.
 ///
@@ -115,7 +114,7 @@ public final class Notation: Model, @unchecked Sendable {
     /// Looks up the Neon Law Foundation entity and assigns it as this notation's owner.
     ///
     /// - Parameter database: The database connection to use for the lookup.
-    /// - Throws: `Abort` with `.internalServerError` if Neon Law Foundation entity is not found.
+    /// - Throws: `NotationError.missingRequiredField` if Neon Law Foundation entity is not found.
     public func setDefaultOwner(on database: Database) async throws {
         // Find Neon Law Foundation
         let neonLawFoundation = try await Entity.query(on: database)
@@ -123,7 +122,7 @@ public final class Notation: Model, @unchecked Sendable {
             .first()
 
         guard let neonLawFoundation = neonLawFoundation else {
-            throw Abort(.internalServerError, reason: "Neon Law Foundation entity not found")
+            throw NotationError.missingRequiredField("Neon Law Foundation entity")
         }
 
         self.$owner.id = try neonLawFoundation.requireID()

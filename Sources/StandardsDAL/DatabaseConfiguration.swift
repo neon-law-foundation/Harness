@@ -1,92 +1,43 @@
-import Fluent
-import FluentPostgresDriver
-import FluentSQLiteDriver
+import FluentKit
 import Foundation
 import Logging
-import Vapor
 import Yams
 
-/// Configuration utility for setting up the database with all migrations
+/// Configuration utility for the Standards data access layer.
 public struct StandardsDALConfiguration {
 
-    /// Configure the database and run all migrations
-    /// Uses ENV environment variable to determine database:
-    /// - ENV=production: PostgreSQL
-    /// - Otherwise: SQLite (in-memory for testing, file-based for development)
-    public static func configure(_ app: Application) async throws {
-        let env = Environment.get("ENV")?.lowercased() ?? "development"
-        let isProduction = env == "production"
-
-        // Configure database driver based on environment
-        if isProduction {
-            // Production: Use PostgreSQL
-            let hostname = Environment.get("DATABASE_HOST") ?? "localhost"
-            let port = Environment.get("DATABASE_PORT").flatMap(Int.init) ?? 5432
-            let username = Environment.get("DATABASE_USERNAME") ?? "postgres"
-            let password = Environment.get("DATABASE_PASSWORD") ?? ""
-            let database = Environment.get("DATABASE_NAME") ?? "standards"
-
-            // Use new SQLPostgresConfiguration API
-            let config = SQLPostgresConfiguration(
-                hostname: hostname,
-                port: port,
-                username: username,
-                password: password,
-                database: database,
-                tls: .disable
-            )
-
-            app.databases.use(
-                DatabaseConfigurationFactory.postgres(configuration: config),
-                as: .psql
-            )
-
-            app.logger.info("Database configured: PostgreSQL at \(hostname):\(port)/\(database)")
-        } else {
-            // Development/Testing: Use SQLite
-            // Use in-memory for testing environment, file-based for development
-            let isTestEnvironment = env == "testing" || app.environment == .testing
-
-            if isTestEnvironment {
-                app.databases.use(DatabaseConfigurationFactory.sqlite(.memory), as: .sqlite)
-                app.logger.info("Database configured: SQLite (in-memory)")
-            } else {
-                let dbPath = Environment.get("DATABASE_PATH") ?? "db/standards.sqlite"
-                app.databases.use(DatabaseConfigurationFactory.sqlite(.file(dbPath)), as: .sqlite)
-                app.logger.info("Database configured: SQLite at \(dbPath)")
-            }
-        }
-
-        // Add all migrations in order
-        app.migrations.add(CreatePeople())
-        app.migrations.add(CreateUsers())
-        app.migrations.add(CreateJurisdictions())
-        app.migrations.add(CreateEntityTypes())
-        app.migrations.add(CreateEntities())
-        app.migrations.add(CreateShareClasses())
-        app.migrations.add(CreateBlobs())
-        app.migrations.add(CreateProjects())
-        app.migrations.add(CreateCredentials())
-        app.migrations.add(CreateRelationshipLogs())
-        app.migrations.add(CreateDisclosures())
-        app.migrations.add(CreateQuestions())
-        app.migrations.add(CreateAddresses())
-        app.migrations.add(CreateMailboxes())
-        app.migrations.add(CreatePersonEntityRoles())
-        app.migrations.add(CreateNotations())
-        app.migrations.add(CreateAssignedNotations())
-        app.migrations.add(UpdateAssignedNotationStates())
-        app.migrations.add(AddVersionToNotations())
-        app.migrations.add(CreateGitRepositories())
-        app.migrations.add(AddGitRepositoryToNotations())
-
-        // Run migrations
-        try await app.autoMigrate()
-        app.logger.info("Database migrations completed")
+    /// All migrations in order for the Standards database schema.
+    ///
+    /// Register these with your application's migration system to set up the Standards schema.
+    /// The order matters — each migration depends on the tables created by earlier ones.
+    public static var migrations: [any Migration] {
+        [
+            CreatePeople(),
+            CreateUsers(),
+            CreateJurisdictions(),
+            CreateEntityTypes(),
+            CreateEntities(),
+            CreateShareClasses(),
+            CreateBlobs(),
+            CreateProjects(),
+            CreateCredentials(),
+            CreateRelationshipLogs(),
+            CreateDisclosures(),
+            CreateQuestions(),
+            CreateAddresses(),
+            CreateMailboxes(),
+            CreatePersonEntityRoles(),
+            CreateNotations(),
+            CreateAssignedNotations(),
+            UpdateAssignedNotationStates(),
+            AddVersionToNotations(),
+            CreateGitRepositories(),
+            AddGitRepositoryToNotations(),
+        ]
     }
 
-    /// Run seeds from YAML files and return the count of records seeded
-    public static func runSeeds(on database: Database, environment: Environment, logger: Logger) async throws -> Int {
+    /// Run seeds from YAML files and return the count of records seeded.
+    public static func runSeeds(on database: Database, logger: Logger) async throws -> Int {
         var totalSeeds = 0
         let seedOrder: [String] = [
             "Jurisdiction",
@@ -106,7 +57,7 @@ public struct StandardsDALConfiguration {
         for modelName in seedOrder {
             logger.info("Processing seeds for model: \(modelName)")
 
-            if let seedFile = findSeedFile(for: modelName, environment: environment, logger: logger) {
+            if let seedFile = findSeedFile(for: modelName, logger: logger) {
                 logger.info("Loading seed file: \(seedFile)")
                 let count = try await processSeedFile(
                     seedFile,
@@ -123,7 +74,7 @@ public struct StandardsDALConfiguration {
     }
 
     /// Find seed file for a model
-    private static func findSeedFile(for modelName: String, environment: Environment, logger: Logger) -> String? {
+    private static func findSeedFile(for modelName: String, logger: Logger) -> String? {
         // Try Bundle.module first
         if let seedURL = Bundle.module.url(forResource: "Seeds/\(modelName)", withExtension: "yaml") {
             if FileManager.default.fileExists(atPath: seedURL.path) {
@@ -248,31 +199,16 @@ public struct StandardsDALConfiguration {
         }
     }
 
-    /// Configure database for testing with SQLite (in-memory)
-    /// Sets ENV=testing to force in-memory SQLite
-    public static func configureForTesting(_ app: Application) async throws {
-        // Ensure testing environment
-        setenv("ENV", "testing", 1)
-        try await configure(app)
-    }
-
-    /// Configure database for production with PostgreSQL
-    /// Sets ENV=production to force PostgreSQL
-    public static func configureForProduction(_ app: Application) async throws {
-        // Ensure production environment
-        setenv("ENV", "production", 1)
-        try await configure(app)
-    }
 }
 
 // MARK: - Supporting Types
 
-struct SeedData {
+private struct SeedData {
     let lookupFields: [String]
     let records: [[String: Any]]
 }
 
-enum SeedError: Error {
+private enum SeedError: Error {
     case invalidYAMLStructure
     case missingRequiredField(String)
     case unsupportedModel(String)

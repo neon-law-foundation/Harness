@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 // Represents a legal entity in the directory
 public final class Entity: Model, @unchecked Sendable {

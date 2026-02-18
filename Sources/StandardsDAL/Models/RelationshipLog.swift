@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 /// Relationship logs for legal matters linking projects with legal credentials.
 ///

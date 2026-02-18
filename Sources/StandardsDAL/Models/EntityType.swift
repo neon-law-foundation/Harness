@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 /// Represents a type of legal entity
 public final class EntityType: Model, @unchecked Sendable {
@@ -23,5 +22,3 @@ public final class EntityType: Model, @unchecked Sendable {
 
     public init() {}
 }
-
-extension EntityType: Content {}

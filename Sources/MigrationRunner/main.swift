@@ -1,4 +1,7 @@
 import AWSLambdaRuntime
+import Fluent
+import FluentPostgresDriver
+import FluentSQLiteDriver
 import Foundation
 import Logging
 import StandardsDAL
@@ -19,13 +22,35 @@ let runtime = LambdaRuntime { (event: MigrationRequest, context: LambdaContext) 
     context.logger.info("Migration Lambda invoked with action: \(event.action)")
 
     // Create a temporary Vapor Application
-    var env = try Environment.detect()
-    env.arguments = ["serve"]
+    var vaporEnv = try Environment.detect()
+    vaporEnv.arguments = ["serve"]
 
-    let app = try await Application.make(env)
+    let app = try await Application.make(vaporEnv)
 
-    // Configure database using StandardsDAL
-    try await StandardsDALConfiguration.configure(app)
+    // Configure database
+    let dbEnv = ProcessInfo.processInfo.environment["ENV"]?.lowercased() ?? "production"
+    if dbEnv == "production" {
+        let hostname = ProcessInfo.processInfo.environment["DATABASE_HOST"] ?? "localhost"
+        let port = Int(ProcessInfo.processInfo.environment["DATABASE_PORT"] ?? "5432") ?? 5432
+        let username = ProcessInfo.processInfo.environment["DATABASE_USERNAME"] ?? "postgres"
+        let password = ProcessInfo.processInfo.environment["DATABASE_PASSWORD"] ?? ""
+        let database = ProcessInfo.processInfo.environment["DATABASE_NAME"] ?? "standards"
+        let config = SQLPostgresConfiguration(
+            hostname: hostname,
+            port: port,
+            username: username,
+            password: password,
+            database: database,
+            tls: .disable
+        )
+        app.databases.use(DatabaseConfigurationFactory.postgres(configuration: config), as: .psql)
+    } else {
+        app.databases.use(DatabaseConfigurationFactory.sqlite(.memory), as: .sqlite)
+    }
+    for migration in StandardsDALConfiguration.migrations {
+        app.migrations.add(migration)
+    }
+    try await app.autoMigrate()
 
     var migrationsRun = 0
     var seedsLoaded = 0
@@ -33,24 +58,20 @@ let runtime = LambdaRuntime { (event: MigrationRequest, context: LambdaContext) 
     switch event.action.lowercased() {
     case "migrate":
         context.logger.info("Running migrations only")
-        // Migrations already run by configure()
-        migrationsRun = 15  // Total number of migrations
+        migrationsRun = StandardsDALConfiguration.migrations.count
 
     case "seed":
         context.logger.info("Running seeds only")
         seedsLoaded = try await StandardsDALConfiguration.runSeeds(
             on: app.db,
-            environment: app.environment,
             logger: context.logger
         )
 
     case "both", "all":
         context.logger.info("Running migrations and seeds")
-        // Migrations already run by configure()
-        migrationsRun = 15
+        migrationsRun = StandardsDALConfiguration.migrations.count
         seedsLoaded = try await StandardsDALConfiguration.runSeeds(
             on: app.db,
-            environment: app.environment,
             logger: context.logger
         )
 

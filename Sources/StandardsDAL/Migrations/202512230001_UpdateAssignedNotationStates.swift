@@ -1,4 +1,4 @@
-import Fluent
+import FluentKit
 import SQLKit
 
 /// Adds new state values to the assigned_notation_state enum.

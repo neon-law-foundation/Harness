@@ -1,4 +1,4 @@
-import Fluent
+import FluentKit
 import SQLKit
 
 /// Creates the git_repositories table for tracking AWS CodeCommit repositories.

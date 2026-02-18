@@ -1,9 +1,8 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 /// Type of legal jurisdiction
-public enum JurisdictionType: String, Codable, CaseIterable, Content, Sendable {
+public enum JurisdictionType: String, Codable, CaseIterable, Sendable {
     case city = "city"
     case county = "county"
     case state = "state"

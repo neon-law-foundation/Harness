@@ -1,6 +1,5 @@
-import Fluent
+import FluentKit
 import Foundation
-import Vapor
 
 /// Represents a blob reference stored in object storage (AWS S3) or local filesystem in development and testing.
 ///

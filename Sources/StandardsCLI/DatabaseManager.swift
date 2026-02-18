@@ -19,12 +19,13 @@ public actor DatabaseManager {
 
         self.app = try await Application.make(env)
 
-        setenv("ENV", "testing", 1)
-
         app.databases.use(.sqlite(.memory), as: .sqlite)
         app.logger = logger
 
-        try await StandardsDALConfiguration.configure(app)
+        for migration in StandardsDALConfiguration.migrations {
+            app.migrations.add(migration)
+        }
+        try await app.autoMigrate()
 
         logger.info("Database configured: SQLite (in-memory)")
     }

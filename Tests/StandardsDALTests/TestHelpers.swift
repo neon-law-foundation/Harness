@@ -9,7 +9,11 @@ func withApplication<T>(
     _ operation: (Application) async throws -> T
 ) async throws -> T {
     let app = try await Application.make(.testing)
-    try await StandardsDALConfiguration.configureForTesting(app)
+    app.databases.use(.sqlite(.memory), as: .sqlite)
+    for migration in StandardsDALConfiguration.migrations {
+        app.migrations.add(migration)
+    }
+    try await app.autoMigrate()
 
     do {
         let result = try await operation(app)

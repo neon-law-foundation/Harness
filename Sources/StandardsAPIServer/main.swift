@@ -1,3 +1,6 @@
+import Fluent
+import FluentPostgresDriver
+import FluentSQLiteDriver
 import Foundation
 import Logging
 import OpenAPIRuntime
@@ -41,13 +44,40 @@ struct StandardsAPIServer {
 
 /// Configure database connection for local development
 private func configureDatabase(_ app: Application) async throws {
-    // Configure database (uses SQLite for development)
-    try await StandardsDALConfiguration.configure(app)
+    let env = ProcessInfo.processInfo.environment["ENV"]?.lowercased() ?? "development"
+
+    if env == "production" {
+        let hostname = ProcessInfo.processInfo.environment["DATABASE_HOST"] ?? "localhost"
+        let port = Int(ProcessInfo.processInfo.environment["DATABASE_PORT"] ?? "5432") ?? 5432
+        let username = ProcessInfo.processInfo.environment["DATABASE_USERNAME"] ?? "postgres"
+        let password = ProcessInfo.processInfo.environment["DATABASE_PASSWORD"] ?? ""
+        let database = ProcessInfo.processInfo.environment["DATABASE_NAME"] ?? "standards"
+
+        let config = SQLPostgresConfiguration(
+            hostname: hostname,
+            port: port,
+            username: username,
+            password: password,
+            database: database,
+            tls: .disable
+        )
+        app.databases.use(DatabaseConfigurationFactory.postgres(configuration: config), as: .psql)
+        app.logger.info("Database configured: PostgreSQL at \(hostname):\(port)/\(database)")
+    } else {
+        let dbPath = ProcessInfo.processInfo.environment["DATABASE_PATH"] ?? "db/standards.sqlite"
+        app.databases.use(DatabaseConfigurationFactory.sqlite(.file(dbPath)), as: .sqlite)
+        app.logger.info("Database configured: SQLite at \(dbPath)")
+    }
+
+    for migration in StandardsDALConfiguration.migrations {
+        app.migrations.add(migration)
+    }
+    try await app.autoMigrate()
+    app.logger.info("Database migrations completed")
 
     // Load seed data
     let seedCount = try await StandardsDALConfiguration.runSeeds(
         on: app.db,
-        environment: app.environment,
         logger: app.logger
     )
 

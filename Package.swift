@@ -8,7 +8,13 @@ let package = Package(
     platforms: [
         .macOS(.v15)
     ],
+    products: [
+        .library(name: "SagebrushDAL", targets: ["StandardsDAL"]),
+        .library(name: "SagebrushRules", targets: ["StandardsRules"]),
+    ],
     dependencies: [
+        .package(url: "https://github.com/vapor/fluent-kit.git", from: "1.52.2"),
+        .package(url: "https://github.com/vapor/sql-kit.git", from: "3.33.2"),
         .package(url: "https://github.com/vapor/fluent.git", from: "4.13.0"),
         .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.12.0"),
         .package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.8.1"),
@@ -30,15 +36,18 @@ let package = Package(
             name: "StandardsDAL",
             dependencies: [
                 "StandardsRules",
-                .product(name: "Fluent", package: "fluent"),
-                .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
-                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
-                .product(name: "Vapor", package: "vapor"),
+                .product(name: "FluentKit", package: "fluent-kit"),
+                .product(name: "FluentSQL", package: "fluent-kit"),
+                .product(name: "SQLKit", package: "sql-kit"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "Yams", package: "Yams"),
             ],
             exclude: [
-                "README.md"
+                "README.md",
+                "ERD-1.svg",
+                "ERD-1.png",
+                "ERD.md",
+                "export-erd.sh",
             ],
             resources: [
                 .copy("Examples"),
@@ -50,6 +59,9 @@ let package = Package(
             dependencies: [
                 "StandardsRules",
                 .target(name: "StandardsDAL", condition: .when(platforms: [.macOS])),
+                .product(name: "Fluent", package: "fluent"),
+                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
+                .product(name: "Vapor", package: "vapor"),
                 .product(name: "Logging", package: "swift-log"),
             ]
         ),
@@ -57,6 +69,10 @@ let package = Package(
             name: "MigrationRunner",
             dependencies: [
                 "StandardsDAL",
+                .product(name: "Fluent", package: "fluent"),
+                .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
+                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
+                .product(name: "Vapor", package: "vapor"),
                 .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
                 .product(name: "Logging", package: "swift-log"),
             ]
@@ -81,6 +97,9 @@ let package = Package(
             name: "StandardsAPIServer",
             dependencies: [
                 "StandardsDAL",
+                .product(name: "Fluent", package: "fluent"),
+                .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
+                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "OpenAPIVapor", package: "swift-openapi-vapor"),
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
@@ -101,6 +120,9 @@ let package = Package(
             dependencies: [
                 "StandardsDAL",
                 "StandardsRules",
+                .product(name: "Fluent", package: "fluent"),
+                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
+                .product(name: "Vapor", package: "vapor"),
             ]
         ),
         .testTarget(

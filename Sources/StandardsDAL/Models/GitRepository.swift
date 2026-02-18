@@ -1,4 +1,4 @@
-import Fluent
+import FluentKit
 import Foundation
 
 /// Represents an AWS CodeCommit Git repository that stores notation templates

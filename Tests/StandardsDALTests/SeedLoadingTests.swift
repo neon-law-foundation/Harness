@@ -13,7 +13,6 @@ struct SeedLoadingTests {
             // Load all seed files
             let count = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
@@ -34,7 +33,6 @@ struct SeedLoadingTests {
         try await withApplication { app in
             _ = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
@@ -54,7 +52,6 @@ struct SeedLoadingTests {
         try await withApplication { app in
             _ = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
@@ -80,7 +77,6 @@ struct SeedLoadingTests {
         try await withApplication { app in
             _ = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
@@ -119,7 +115,6 @@ struct SeedLoadingTests {
         try await withApplication { app in
             _ = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
@@ -166,7 +161,6 @@ struct SeedLoadingTests {
         try await withApplication { app in
             _ = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
@@ -197,7 +191,6 @@ struct SeedLoadingTests {
         try await withApplication { app in
             _ = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
@@ -224,7 +217,6 @@ struct SeedLoadingTests {
         try await withApplication { app in
             _ = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
@@ -260,7 +252,6 @@ struct SeedLoadingTests {
             // Load seeds first time
             let count1 = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
@@ -274,7 +265,6 @@ struct SeedLoadingTests {
             // Load seeds second time
             let count2 = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
@@ -304,7 +294,6 @@ struct SeedLoadingTests {
         try await withApplication { app in
             _ = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
@@ -332,7 +321,6 @@ struct SeedLoadingTests {
         try await withApplication { app in
             _ = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
@@ -358,7 +346,6 @@ struct SeedLoadingTests {
         try await withApplication { app in
             _ = try await StandardsDALConfiguration.runSeeds(
                 on: app.db,
-                environment: app.environment,
                 logger: app.logger
             )
 
