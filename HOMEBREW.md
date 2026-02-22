@@ -27,7 +27,7 @@ brew install neon-law-foundation/tap/standards
 
 The `.github/workflows/daily-release.yml` workflow runs daily at 2 AM UTC and:
 
-1. **Generates version** from current date in `YY.MM.DD` format (e.g., `26.01.08`)
+1. **Generates version** from current date in `YYYY.MM.DD` format (e.g., `2026.01.08`)
 2. **Builds binaries** for multiple architectures:
    - Apple Silicon (arm64)
    - Intel (x86_64)
@@ -37,10 +37,10 @@ The `.github/workflows/daily-release.yml` workflow runs daily at 2 AM UTC and:
 
 ### Version Format
 
-Versions follow the `YY.MM.DD` format:
+Versions follow the `YYYY.MM.DD` format:
 
-- `26.01.08` = January 8, 2026
-- `26.12.31` = December 31, 2026
+- `2026.01.08` = January 8, 2026
+- `2026.12.31` = December 31, 2026
 
 This ensures:
 
@@ -86,9 +86,9 @@ cat > Formula/standards.rb <<'EOF'
 class Standards < Formula
   desc "Legal standards and compliance management CLI"
   homepage "https://github.com/neon-law-foundation/SagebrushStandards"
-  url "https://github.com/neon-law-foundation/SagebrushStandards/releases/download/v26.01.08/standards-26.01.08-macos-universal.tar.gz"
+  url "https://github.com/neon-law-foundation/SagebrushStandards/releases/download/v2026.01.08/standards-2026.01.08-macos-universal.tar.gz"
   sha256 "PLACEHOLDER_WILL_BE_UPDATED_BY_WORKFLOW"
-  version "26.01.08"
+  version "2026.01.08"
   license "Apache-2.0"
 
   def install
@@ -166,9 +166,9 @@ publishing to avoid duplicate releases.
 
 Each release includes:
 
-- `standards-YY.MM.DD-macos-arm64.tar.gz` - Apple Silicon binary
-- `standards-YY.MM.DD-macos-x86_64.tar.gz` - Intel binary
-- `standards-YY.MM.DD-macos-universal.tar.gz` - Universal binary
+- `standards-YYYY.MM.DD-macos-arm64.tar.gz` - Apple Silicon binary
+- `standards-YYYY.MM.DD-macos-x86_64.tar.gz` - Intel binary
+- `standards-YYYY.MM.DD-macos-universal.tar.gz` - Universal binary
 - `checksums.txt` - SHA256 checksums for all archives
 
 ### Homebrew Formula Update
@@ -177,7 +177,7 @@ After creating the release, the workflow:
 
 1. Clones the `homebrew-tap` repository
 2. Updates `Formula/standards.rb` with:
-   - New version number (YY.MM.DD)
+   - New version number (YYYY.MM.DD)
    - New download URL
    - New SHA256 checksum
 3. Commits and pushes the updated formula
