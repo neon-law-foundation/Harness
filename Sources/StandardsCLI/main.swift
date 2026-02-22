@@ -20,6 +20,7 @@ func printUsage() {
                               Restores front matter and saves to original location
           format <file>       Format a Markdown file
                               Converts '-' bullet lists to '*', wraps at 120 chars, trims whitespace
+          questions list      List all seeded questions with their prompts (macOS only)
 
         Options:
           --help, -h          Show this help message
@@ -32,6 +33,7 @@ func printUsage() {
           standards edit nevada.md
           standards save nevada.md
           standards format nevada.md
+          standards questions list
         """
     )
 }
@@ -92,6 +94,19 @@ Task {
             }
             let filePath = arguments[2]
             command = FormatCommand(filePath: filePath)
+
+        #if os(macOS)
+        case "questions":
+            let subCommand = arguments.count > 2 ? arguments[2] : ""
+            switch subCommand {
+            case "list":
+                command = QuestionsListCommand()
+            default:
+                print("Error: Unknown questions subcommand: '\(subCommand)'")
+                print("Usage: standards questions list")
+                exit(1)
+            }
+        #endif
 
         case "--help", "-h":
             printUsage()

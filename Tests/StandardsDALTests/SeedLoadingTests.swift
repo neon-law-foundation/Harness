@@ -341,6 +341,30 @@ struct SeedLoadingTests {
         }
     }
 
+    @Test("Questions seed loads all prompts")
+    func testQuestionsLoad() async throws {
+        try await withApplication { app in
+            _ = try await StandardsDALConfiguration.runSeeds(
+                on: app.db,
+                logger: app.logger
+            )
+
+            let questions = try await Question.query(on: app.db).all()
+            #expect(questions.count > 0, "No questions were seeded")
+
+            for question in questions {
+                #expect(!question.code.isEmpty, "Question has empty code")
+                #expect(!question.prompt.isEmpty, "Question has empty prompt")
+            }
+
+            let personalName = try await Question.query(on: app.db)
+                .filter(\.$code == "personal_name")
+                .first()
+            #expect(personalName != nil, "personal_name question not found")
+            #expect(personalName?.prompt == "What is your name?")
+        }
+    }
+
     @Test("Seed data integrity - addresses link to entities")
     func testAddressEntityRelationship() async throws {
         try await withApplication { app in
