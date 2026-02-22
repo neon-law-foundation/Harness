@@ -11,8 +11,10 @@ public actor DatabaseManager {
     private let app: Application
     private let logger: Logger
 
-    public init() async throws {
-        self.logger = Logger(label: "standards-cli")
+    public init(seed: Bool = false) async throws {
+        var silentLogger = Logger(label: "standards-cli")
+        silentLogger.logLevel = .error
+        self.logger = silentLogger
 
         var env = Environment(name: "testing", arguments: ["vapor"])
         try LoggingSystem.bootstrap(from: &env)
@@ -27,7 +29,9 @@ public actor DatabaseManager {
         }
         try await app.autoMigrate()
 
-        logger.info("Database configured: SQLite (in-memory)")
+        if seed {
+            _ = try await StandardsDALConfiguration.runSeeds(on: app.db, logger: logger)
+        }
     }
 
     nonisolated public func getDatabase() -> Database {
