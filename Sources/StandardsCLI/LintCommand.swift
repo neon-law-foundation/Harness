@@ -1,4 +1,5 @@
 import Foundation
+import StandardsDAL
 import StandardsRules
 
 struct LintCommand: Command {
@@ -20,11 +21,18 @@ struct LintCommand: Command {
             throw CommandError.invalidDirectory(directoryPath)
         }
 
+        let dbManager = try await DatabaseManager(seed: true)
+        let repository = QuestionRepository(database: dbManager.getDatabase())
+        let allQuestions = try await repository.findAll()
+        try await dbManager.shutdown()
+        let validCodes = Set(allQuestions.map(\.code))
+
         let engine = RuleEngine(rules: [
             S101_LineLength(),
             F101_TitleRequired(),
             F102_RespondentTypeRequired(),
             F103_PascalCaseFilename(),
+            F104_FlowQuestionCodes(validCodes: validCodes),
         ])
 
         let result = try engine.lint(directory: url)
