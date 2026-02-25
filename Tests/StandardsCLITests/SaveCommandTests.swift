@@ -77,25 +77,31 @@ struct SaveCommandTests {
 
         try originalContent.write(to: originalFile, atomically: true, encoding: .utf8)
 
-        _ = try MarkdownEditor.ensureTempDirectory()
-        let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
-        try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
-        try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
-        try? FileManager.default.removeItem(atPath: tempDOCXFile)
+        do {
+            _ = try MarkdownEditor.ensureTempDirectory()
+            let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
+            try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
+            try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
+            try? FileManager.default.removeItem(atPath: tempDOCXFile)
 
-        try SaveCommand.saveTempFile(to: originalFile.path)
+            try SaveCommand.saveTempFile(to: originalFile.path)
 
-        let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
+            let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
 
-        #expect(savedContent.contains("---"))
-        #expect(savedContent.contains("title: Original Title"))
-        #expect(savedContent.contains("author: John Doe"))
-        #expect(savedContent.contains("# New Header"))
-        #expect(savedContent.contains("New content"))
-        #expect(!savedContent.contains("Old content here."))
+            #expect(savedContent.contains("---"))
+            #expect(savedContent.contains("title: Original Title"))
+            #expect(savedContent.contains("author: John Doe"))
+            #expect(savedContent.contains("# New Header"))
+            #expect(savedContent.contains("New content"))
+            #expect(!savedContent.contains("Old content here."))
 
-        try? FileManager.default.removeItem(at: testDir)
-        try? FileManager.default.removeItem(atPath: tempFile)
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: tempFile)
+        } catch {
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: tempFile)
+            throw error
+        }
         #endif
     }
 
@@ -130,23 +136,29 @@ struct SaveCommandTests {
 
         try originalContent.write(to: originalFile, atomically: true, encoding: .utf8)
 
-        _ = try MarkdownEditor.ensureTempDirectory()
-        let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
-        try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
-        try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
-        try? FileManager.default.removeItem(atPath: tempDOCXFile)
+        do {
+            _ = try MarkdownEditor.ensureTempDirectory()
+            let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
+            try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
+            try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
+            try? FileManager.default.removeItem(atPath: tempDOCXFile)
 
-        try SaveCommand.saveTempFile(to: originalFile.path)
+            try SaveCommand.saveTempFile(to: originalFile.path)
 
-        let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
+            let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
 
-        #expect(!savedContent.contains("---"))
-        #expect(savedContent.contains("# New Header"))
-        #expect(savedContent.contains("New content"))
-        #expect(!savedContent.contains("Old content here."))
+            #expect(!savedContent.contains("---"))
+            #expect(savedContent.contains("# New Header"))
+            #expect(savedContent.contains("New content"))
+            #expect(!savedContent.contains("Old content here."))
 
-        try? FileManager.default.removeItem(at: testDir)
-        try? FileManager.default.removeItem(atPath: tempFile)
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: tempFile)
+        } catch {
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: tempFile)
+            throw error
+        }
         #endif
     }
 
@@ -183,26 +195,32 @@ struct SaveCommandTests {
 
         try originalContent.write(to: originalFile, atomically: true, encoding: .utf8)
 
-        _ = try MarkdownEditor.ensureTempDirectory()
-        let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
-        try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
-        try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
-        try? FileManager.default.removeItem(atPath: tempDOCXFile)
+        do {
+            _ = try MarkdownEditor.ensureTempDirectory()
+            let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
+            try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
+            try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
+            try? FileManager.default.removeItem(atPath: tempDOCXFile)
 
-        try SaveCommand.saveTempFile(to: originalFile.path)
+            try SaveCommand.saveTempFile(to: originalFile.path)
 
-        let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
-        let lines = savedContent.split(separator: "\n", omittingEmptySubsequences: false)
+            let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
+            let lines = savedContent.split(separator: "\n", omittingEmptySubsequences: false)
 
-        for line in lines {
-            #expect(
-                line.count <= 120,
-                "Line exceeds 120 characters: '\(line)' (length: \(line.count))"
-            )
+            for line in lines {
+                #expect(
+                    line.count <= 120,
+                    "Line exceeds 120 characters: '\(line)' (length: \(line.count))"
+                )
+            }
+
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: tempFile)
+        } catch {
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: tempFile)
+            throw error
         }
-
-        try? FileManager.default.removeItem(at: testDir)
-        try? FileManager.default.removeItem(atPath: tempFile)
         #endif
     }
 
@@ -240,23 +258,28 @@ struct SaveCommandTests {
 
         try originalContent.write(to: originalFile, atomically: true, encoding: .utf8)
 
-        _ = try MarkdownEditor.ensureTempDirectory()
-        let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
-        try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
-        try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
-        try? FileManager.default.removeItem(atPath: tempDOCXFile)
+        do {
+            _ = try MarkdownEditor.ensureTempDirectory()
+            let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
+            try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
+            try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
+            try? FileManager.default.removeItem(atPath: tempDOCXFile)
 
-        try SaveCommand.saveTempFile(to: originalFile.path)
+            try SaveCommand.saveTempFile(to: originalFile.path)
 
-        let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
+            let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
 
-        #expect(!savedContent.contains("\\newpage"), "Page break command should be removed")
+            #expect(!savedContent.contains("\\newpage"), "Page break command should be removed")
+            #expect(savedContent.contains("Content before"))
+            #expect(savedContent.contains("Content after page break"))
 
-        #expect(savedContent.contains("Content before"))
-        #expect(savedContent.contains("Content after page break"))
-
-        try? FileManager.default.removeItem(at: testDir)
-        try? FileManager.default.removeItem(atPath: tempFile)
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: tempFile)
+        } catch {
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: tempFile)
+            throw error
+        }
         #endif
     }
 }

@@ -47,14 +47,20 @@ struct EditCommandTests {
 
         try content.write(to: testFile, atomically: true, encoding: .utf8)
 
-        let tempPath = try EditCommand.createTempFile(from: testFile.path)
+        do {
+            let tempPath = try EditCommand.createTempFile(from: testFile.path)
 
-        #expect(tempPath == expectedTempFile)
-        #expect(FileManager.default.fileExists(atPath: expectedTempFile))
-        #expect(tempPath.hasSuffix(".pages"))
+            #expect(tempPath == expectedTempFile)
+            #expect(FileManager.default.fileExists(atPath: expectedTempFile))
+            #expect(tempPath.hasSuffix(".pages"))
 
-        try? FileManager.default.removeItem(at: testDir)
-        try? FileManager.default.removeItem(atPath: expectedTempFile)
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: expectedTempFile)
+        } catch {
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: expectedTempFile)
+            throw error
+        }
         #endif
     }
 
@@ -82,13 +88,19 @@ struct EditCommandTests {
         try content.write(to: testFile, atomically: true, encoding: .utf8)
         try "old rtf content".write(toFile: expectedTempFile, atomically: true, encoding: .utf8)
 
-        let tempPath = try EditCommand.createTempFile(from: testFile.path)
+        do {
+            let tempPath = try EditCommand.createTempFile(from: testFile.path)
 
-        #expect(FileManager.default.fileExists(atPath: tempPath))
-        #expect(tempPath == expectedTempFile)
+            #expect(FileManager.default.fileExists(atPath: tempPath))
+            #expect(tempPath == expectedTempFile)
 
-        try? FileManager.default.removeItem(at: testDir)
-        try? FileManager.default.removeItem(atPath: expectedTempFile)
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: expectedTempFile)
+        } catch {
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: expectedTempFile)
+            throw error
+        }
         #endif
     }
 
