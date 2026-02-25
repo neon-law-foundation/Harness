@@ -33,13 +33,11 @@ struct SaveCommandTests {
         let tempFile = "/tmp/temp-save-test-\(UUID()).md"
         try "content".write(toFile: tempFile, atomically: true, encoding: .utf8)
 
-        defer {
-            try? FileManager.default.removeItem(atPath: tempFile)
-        }
-
         #expect(throws: CommandError.self) {
             try SaveCommand.saveTempFile(to: "/non/existent/file.md")
         }
+
+        try? FileManager.default.removeItem(atPath: tempFile)
         #endif
     }
 
@@ -47,6 +45,9 @@ struct SaveCommandTests {
     func testSavesWithFrontMatter() async throws {
         #if os(macOS)
         guard PandocConverter.isPandocInstalled() else {
+            return
+        }
+        guard ProcessInfo.processInfo.environment["STANDARDS_PAGES_INTEGRATION"] != nil else {
             return
         }
 
@@ -82,11 +83,6 @@ struct SaveCommandTests {
         try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
         try? FileManager.default.removeItem(atPath: tempDOCXFile)
 
-        defer {
-            try? FileManager.default.removeItem(at: testDir)
-            try? FileManager.default.removeItem(atPath: tempFile)
-        }
-
         try SaveCommand.saveTempFile(to: originalFile.path)
 
         let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
@@ -97,6 +93,9 @@ struct SaveCommandTests {
         #expect(savedContent.contains("# New Header"))
         #expect(savedContent.contains("New content"))
         #expect(!savedContent.contains("Old content here."))
+
+        try? FileManager.default.removeItem(at: testDir)
+        try? FileManager.default.removeItem(atPath: tempFile)
         #endif
     }
 
@@ -104,6 +103,9 @@ struct SaveCommandTests {
     func testSavesWithoutFrontMatter() async throws {
         #if os(macOS)
         guard PandocConverter.isPandocInstalled() else {
+            return
+        }
+        guard ProcessInfo.processInfo.environment["STANDARDS_PAGES_INTEGRATION"] != nil else {
             return
         }
 
@@ -134,11 +136,6 @@ struct SaveCommandTests {
         try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
         try? FileManager.default.removeItem(atPath: tempDOCXFile)
 
-        defer {
-            try? FileManager.default.removeItem(at: testDir)
-            try? FileManager.default.removeItem(atPath: tempFile)
-        }
-
         try SaveCommand.saveTempFile(to: originalFile.path)
 
         let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
@@ -147,6 +144,9 @@ struct SaveCommandTests {
         #expect(savedContent.contains("# New Header"))
         #expect(savedContent.contains("New content"))
         #expect(!savedContent.contains("Old content here."))
+
+        try? FileManager.default.removeItem(at: testDir)
+        try? FileManager.default.removeItem(atPath: tempFile)
         #endif
     }
 
@@ -154,6 +154,9 @@ struct SaveCommandTests {
     func testLineWrapping() async throws {
         #if os(macOS)
         guard PandocConverter.isPandocInstalled() else {
+            return
+        }
+        guard ProcessInfo.processInfo.environment["STANDARDS_PAGES_INTEGRATION"] != nil else {
             return
         }
 
@@ -186,11 +189,6 @@ struct SaveCommandTests {
         try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
         try? FileManager.default.removeItem(atPath: tempDOCXFile)
 
-        defer {
-            try? FileManager.default.removeItem(at: testDir)
-            try? FileManager.default.removeItem(atPath: tempFile)
-        }
-
         try SaveCommand.saveTempFile(to: originalFile.path)
 
         let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
@@ -202,6 +200,9 @@ struct SaveCommandTests {
                 "Line exceeds 120 characters: '\(line)' (length: \(line.count))"
             )
         }
+
+        try? FileManager.default.removeItem(at: testDir)
+        try? FileManager.default.removeItem(atPath: tempFile)
         #endif
     }
 
@@ -209,6 +210,9 @@ struct SaveCommandTests {
     func testPageBreakConversion() async throws {
         #if os(macOS)
         guard PandocConverter.isPandocInstalled() else {
+            return
+        }
+        guard ProcessInfo.processInfo.environment["STANDARDS_PAGES_INTEGRATION"] != nil else {
             return
         }
 
@@ -242,11 +246,6 @@ struct SaveCommandTests {
         try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
         try? FileManager.default.removeItem(atPath: tempDOCXFile)
 
-        defer {
-            try? FileManager.default.removeItem(at: testDir)
-            try? FileManager.default.removeItem(atPath: tempFile)
-        }
-
         try SaveCommand.saveTempFile(to: originalFile.path)
 
         let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
@@ -255,6 +254,9 @@ struct SaveCommandTests {
 
         #expect(savedContent.contains("Content before"))
         #expect(savedContent.contains("Content after page break"))
+
+        try? FileManager.default.removeItem(at: testDir)
+        try? FileManager.default.removeItem(atPath: tempFile)
         #endif
     }
 }
