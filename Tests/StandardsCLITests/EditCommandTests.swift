@@ -22,6 +22,9 @@ struct EditCommandTests {
         guard PandocConverter.isPandocInstalled() else {
             return
         }
+        guard ProcessInfo.processInfo.environment["STANDARDS_PAGES_INTEGRATION"] != nil else {
+            return
+        }
 
         let testDir = FileManager.default.temporaryDirectory.appendingPathComponent("edit-test-\(UUID())")
         try FileManager.default.createDirectory(at: testDir, withIntermediateDirectories: true)
@@ -44,16 +47,20 @@ struct EditCommandTests {
 
         try content.write(to: testFile, atomically: true, encoding: .utf8)
 
-        defer {
+        do {
+            let tempPath = try EditCommand.createTempFile(from: testFile.path)
+
+            #expect(tempPath == expectedTempFile)
+            #expect(FileManager.default.fileExists(atPath: expectedTempFile))
+            #expect(tempPath.hasSuffix(".pages"))
+
             try? FileManager.default.removeItem(at: testDir)
             try? FileManager.default.removeItem(atPath: expectedTempFile)
+        } catch {
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: expectedTempFile)
+            throw error
         }
-
-        let tempPath = try EditCommand.createTempFile(from: testFile.path)
-
-        #expect(tempPath == expectedTempFile)
-        #expect(FileManager.default.fileExists(atPath: expectedTempFile))
-        #expect(tempPath.hasSuffix(".pages"))
         #endif
     }
 
@@ -61,6 +68,9 @@ struct EditCommandTests {
     func testOverwritesExistingTempFile() async throws {
         #if os(macOS)
         guard PandocConverter.isPandocInstalled() else {
+            return
+        }
+        guard ProcessInfo.processInfo.environment["STANDARDS_PAGES_INTEGRATION"] != nil else {
             return
         }
 
@@ -78,15 +88,19 @@ struct EditCommandTests {
         try content.write(to: testFile, atomically: true, encoding: .utf8)
         try "old rtf content".write(toFile: expectedTempFile, atomically: true, encoding: .utf8)
 
-        defer {
+        do {
+            let tempPath = try EditCommand.createTempFile(from: testFile.path)
+
+            #expect(FileManager.default.fileExists(atPath: tempPath))
+            #expect(tempPath == expectedTempFile)
+
             try? FileManager.default.removeItem(at: testDir)
             try? FileManager.default.removeItem(atPath: expectedTempFile)
+        } catch {
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: expectedTempFile)
+            throw error
         }
-
-        let tempPath = try EditCommand.createTempFile(from: testFile.path)
-
-        #expect(FileManager.default.fileExists(atPath: tempPath))
-        #expect(tempPath == expectedTempFile)
         #endif
     }
 

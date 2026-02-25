@@ -33,13 +33,11 @@ struct SaveCommandTests {
         let tempFile = "/tmp/temp-save-test-\(UUID()).md"
         try "content".write(toFile: tempFile, atomically: true, encoding: .utf8)
 
-        defer {
-            try? FileManager.default.removeItem(atPath: tempFile)
-        }
-
         #expect(throws: CommandError.self) {
             try SaveCommand.saveTempFile(to: "/non/existent/file.md")
         }
+
+        try? FileManager.default.removeItem(atPath: tempFile)
         #endif
     }
 
@@ -47,6 +45,9 @@ struct SaveCommandTests {
     func testSavesWithFrontMatter() async throws {
         #if os(macOS)
         guard PandocConverter.isPandocInstalled() else {
+            return
+        }
+        guard ProcessInfo.processInfo.environment["STANDARDS_PAGES_INTEGRATION"] != nil else {
             return
         }
 
@@ -76,27 +77,31 @@ struct SaveCommandTests {
 
         try originalContent.write(to: originalFile, atomically: true, encoding: .utf8)
 
-        _ = try MarkdownEditor.ensureTempDirectory()
-        let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
-        try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
-        try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
-        try? FileManager.default.removeItem(atPath: tempDOCXFile)
+        do {
+            _ = try MarkdownEditor.ensureTempDirectory()
+            let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
+            try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
+            try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
+            try? FileManager.default.removeItem(atPath: tempDOCXFile)
 
-        defer {
+            try SaveCommand.saveTempFile(to: originalFile.path)
+
+            let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
+
+            #expect(savedContent.contains("---"))
+            #expect(savedContent.contains("title: Original Title"))
+            #expect(savedContent.contains("author: John Doe"))
+            #expect(savedContent.contains("# New Header"))
+            #expect(savedContent.contains("New content"))
+            #expect(!savedContent.contains("Old content here."))
+
             try? FileManager.default.removeItem(at: testDir)
             try? FileManager.default.removeItem(atPath: tempFile)
+        } catch {
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: tempFile)
+            throw error
         }
-
-        try SaveCommand.saveTempFile(to: originalFile.path)
-
-        let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
-
-        #expect(savedContent.contains("---"))
-        #expect(savedContent.contains("title: Original Title"))
-        #expect(savedContent.contains("author: John Doe"))
-        #expect(savedContent.contains("# New Header"))
-        #expect(savedContent.contains("New content"))
-        #expect(!savedContent.contains("Old content here."))
         #endif
     }
 
@@ -104,6 +109,9 @@ struct SaveCommandTests {
     func testSavesWithoutFrontMatter() async throws {
         #if os(macOS)
         guard PandocConverter.isPandocInstalled() else {
+            return
+        }
+        guard ProcessInfo.processInfo.environment["STANDARDS_PAGES_INTEGRATION"] != nil else {
             return
         }
 
@@ -128,25 +136,29 @@ struct SaveCommandTests {
 
         try originalContent.write(to: originalFile, atomically: true, encoding: .utf8)
 
-        _ = try MarkdownEditor.ensureTempDirectory()
-        let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
-        try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
-        try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
-        try? FileManager.default.removeItem(atPath: tempDOCXFile)
+        do {
+            _ = try MarkdownEditor.ensureTempDirectory()
+            let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
+            try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
+            try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
+            try? FileManager.default.removeItem(atPath: tempDOCXFile)
 
-        defer {
+            try SaveCommand.saveTempFile(to: originalFile.path)
+
+            let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
+
+            #expect(!savedContent.contains("---"))
+            #expect(savedContent.contains("# New Header"))
+            #expect(savedContent.contains("New content"))
+            #expect(!savedContent.contains("Old content here."))
+
             try? FileManager.default.removeItem(at: testDir)
             try? FileManager.default.removeItem(atPath: tempFile)
+        } catch {
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: tempFile)
+            throw error
         }
-
-        try SaveCommand.saveTempFile(to: originalFile.path)
-
-        let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
-
-        #expect(!savedContent.contains("---"))
-        #expect(savedContent.contains("# New Header"))
-        #expect(savedContent.contains("New content"))
-        #expect(!savedContent.contains("Old content here."))
         #endif
     }
 
@@ -154,6 +166,9 @@ struct SaveCommandTests {
     func testLineWrapping() async throws {
         #if os(macOS)
         guard PandocConverter.isPandocInstalled() else {
+            return
+        }
+        guard ProcessInfo.processInfo.environment["STANDARDS_PAGES_INTEGRATION"] != nil else {
             return
         }
 
@@ -180,27 +195,31 @@ struct SaveCommandTests {
 
         try originalContent.write(to: originalFile, atomically: true, encoding: .utf8)
 
-        _ = try MarkdownEditor.ensureTempDirectory()
-        let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
-        try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
-        try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
-        try? FileManager.default.removeItem(atPath: tempDOCXFile)
+        do {
+            _ = try MarkdownEditor.ensureTempDirectory()
+            let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
+            try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
+            try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
+            try? FileManager.default.removeItem(atPath: tempDOCXFile)
 
-        defer {
+            try SaveCommand.saveTempFile(to: originalFile.path)
+
+            let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
+            let lines = savedContent.split(separator: "\n", omittingEmptySubsequences: false)
+
+            for line in lines {
+                #expect(
+                    line.count <= 120,
+                    "Line exceeds 120 characters: '\(line)' (length: \(line.count))"
+                )
+            }
+
             try? FileManager.default.removeItem(at: testDir)
             try? FileManager.default.removeItem(atPath: tempFile)
-        }
-
-        try SaveCommand.saveTempFile(to: originalFile.path)
-
-        let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
-        let lines = savedContent.split(separator: "\n", omittingEmptySubsequences: false)
-
-        for line in lines {
-            #expect(
-                line.count <= 120,
-                "Line exceeds 120 characters: '\(line)' (length: \(line.count))"
-            )
+        } catch {
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: tempFile)
+            throw error
         }
         #endif
     }
@@ -209,6 +228,9 @@ struct SaveCommandTests {
     func testPageBreakConversion() async throws {
         #if os(macOS)
         guard PandocConverter.isPandocInstalled() else {
+            return
+        }
+        guard ProcessInfo.processInfo.environment["STANDARDS_PAGES_INTEGRATION"] != nil else {
             return
         }
 
@@ -236,25 +258,28 @@ struct SaveCommandTests {
 
         try originalContent.write(to: originalFile, atomically: true, encoding: .utf8)
 
-        _ = try MarkdownEditor.ensureTempDirectory()
-        let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
-        try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
-        try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
-        try? FileManager.default.removeItem(atPath: tempDOCXFile)
+        do {
+            _ = try MarkdownEditor.ensureTempDirectory()
+            let tempDOCXFile = tempFile.replacingOccurrences(of: ".pages", with: ".docx")
+            try PandocConverter.convertMarkdownToDOCX(markdown: editedMarkdown, outputPath: tempDOCXFile)
+            try PandocConverter.convertDOCXToPages(docxPath: tempDOCXFile, pagesPath: tempFile)
+            try? FileManager.default.removeItem(atPath: tempDOCXFile)
 
-        defer {
+            try SaveCommand.saveTempFile(to: originalFile.path)
+
+            let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
+
+            #expect(!savedContent.contains("\\newpage"), "Page break command should be removed")
+            #expect(savedContent.contains("Content before"))
+            #expect(savedContent.contains("Content after page break"))
+
             try? FileManager.default.removeItem(at: testDir)
             try? FileManager.default.removeItem(atPath: tempFile)
+        } catch {
+            try? FileManager.default.removeItem(at: testDir)
+            try? FileManager.default.removeItem(atPath: tempFile)
+            throw error
         }
-
-        try SaveCommand.saveTempFile(to: originalFile.path)
-
-        let savedContent = try String(contentsOf: originalFile, encoding: .utf8)
-
-        #expect(!savedContent.contains("\\newpage"), "Page break command should be removed")
-
-        #expect(savedContent.contains("Content before"))
-        #expect(savedContent.contains("Content after page break"))
         #endif
     }
 }
