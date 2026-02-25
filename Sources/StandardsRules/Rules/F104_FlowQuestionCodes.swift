@@ -106,7 +106,7 @@ public struct F104_FlowQuestionCodes: Rule {
             return violations
         }
 
-        for stateKey in map.keys where stateKey != "BEGIN" {
+        for stateKey in map.keys where stateKey != "BEGIN" && stateKey != "END" {
             let questionCode = stateKey.components(separatedBy: "__").first ?? stateKey
             guard validCodes.contains(questionCode) else {
                 violations.append(
