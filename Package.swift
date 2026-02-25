@@ -30,7 +30,9 @@ let package = Package(
     targets: [
         .target(
             name: "StandardsRules",
-            dependencies: []
+            dependencies: [
+                .product(name: "Yams", package: "Yams")
+            ]
         ),
         .target(
             name: "StandardsDAL",
@@ -58,7 +60,7 @@ let package = Package(
             name: "StandardsCLI",
             dependencies: [
                 "StandardsRules",
-                .target(name: "StandardsDAL", condition: .when(platforms: [.macOS])),
+                "StandardsDAL",
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
                 .product(name: "Vapor", package: "vapor"),
@@ -128,7 +130,12 @@ let package = Package(
         .testTarget(
             name: "StandardsCLITests",
             dependencies: [
-                "StandardsCLI"
+                "StandardsCLI",
+                "StandardsRules",
+                "StandardsDAL",
+                .product(name: "Fluent", package: "fluent"),
+                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
+                .product(name: "Vapor", package: "vapor"),
             ]
         ),
     ]

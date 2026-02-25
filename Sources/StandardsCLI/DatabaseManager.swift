@@ -1,4 +1,3 @@
-#if os(macOS)
 import Fluent
 import FluentSQLiteDriver
 import Foundation
@@ -42,4 +41,3 @@ public actor DatabaseManager {
         try await app.asyncShutdown()
     }
 }
-#endif
