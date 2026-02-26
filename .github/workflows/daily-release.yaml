@@ -1,4 +1,14 @@
 ---
+# Daily Release Workflow
+#
+# Builds the StandardsCLI for arm64, x86_64, and universal macOS targets, creates a versioned
+# GitHub release (YYYY.MM.DD format), and updates Formula/standards.rb in the
+# neon-law-foundation/homebrew-tap repository so `brew tap neon-law-foundation/tap` picks up
+# the new version automatically.
+#
+# Required secret: HOMEBREW_TAP_TOKEN — a GitHub personal access token with `repo` scope,
+# added to this repository's Settings → Secrets and variables → Actions. Without it, the
+# formula update step is skipped with a warning.
 name: Daily Release
 
 on:
