@@ -233,3 +233,11 @@ Build the project:
 ```bash
 swift build
 ```
+
+## Homebrew Distribution
+
+Releases are published daily via `.github/workflows/daily-release.yml`. The workflow builds arm64,
+x86_64, and universal macOS binaries, creates a GitHub release with checksums, and updates
+`Formula/standards.rb` in
+[neon-law-foundation/homebrew-tap](https://github.com/neon-law-foundation/homebrew-tap) — the
+actual GitHub repository behind `brew tap neon-law-foundation/tap`.
