@@ -177,6 +177,8 @@ Command-line interface for linting and importing notations.
   - `LintCommand` - File validation
   - `ImportCommand` - Database import
   - `PDFCommand` - PDF generation
+  - `QuestionsListCommand` - List seeded questions
+  - `JurisdictionsListCommand` - List seeded jurisdictions
   - `DatabaseManager` - In-memory SQLite management
   - `NotationImporter` - Markdown to database importer
 
