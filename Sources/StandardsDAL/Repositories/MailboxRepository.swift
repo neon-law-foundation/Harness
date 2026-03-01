@@ -17,15 +17,15 @@ public struct MailboxRepository: Sendable {
         try await Mailbox.query(on: database).all()
     }
 
-    public func findByAddress(addressId: Int32) async throws -> [Mailbox] {
+    public func findByMailboxOffice(mailboxOfficeId: Int32) async throws -> [Mailbox] {
         try await Mailbox.query(on: database)
-            .filter(\.$address.$id == addressId)
+            .filter(\.$mailboxOffice.$id == mailboxOfficeId)
             .all()
     }
 
-    public func findActive() async throws -> [Mailbox] {
+    public func findByAddress(addressId: Int32) async throws -> [Mailbox] {
         try await Mailbox.query(on: database)
-            .filter(\.$isActive == true)
+            .filter(\.$address.$id == addressId)
             .all()
     }
 

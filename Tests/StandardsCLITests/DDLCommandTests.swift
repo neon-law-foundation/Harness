@@ -8,7 +8,7 @@ import Vapor
 @Suite("DDL Command")
 struct DDLCommandTests {
 
-    /// All 18 schema tables that should appear in sqlite_master after migrations.
+    /// All 19 schema tables that should appear in sqlite_master after migrations.
     private static let expectedTables: Set<String> = [
         "addresses",
         "assigned_notations",
@@ -19,6 +19,7 @@ struct DDLCommandTests {
         "entity_types",
         "git_repositories",
         "jurisdictions",
+        "mailbox_offices",
         "mailboxes",
         "notations",
         "people",
@@ -30,7 +31,7 @@ struct DDLCommandTests {
         "users",
     ]
 
-    @Test("DDL output contains all 18 schema tables")
+    @Test("DDL output contains all 19 schema tables")
     func testDDLContainsAllTables() async throws {
         let app = try await Application.make(.testing)
         app.databases.use(.sqlite(.memory), as: .sqlite)

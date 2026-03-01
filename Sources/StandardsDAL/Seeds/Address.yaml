@@ -3,12 +3,60 @@ lookup_fields:
   - zip
 records:
   - entity:
-      name: Sagebrush Services LLC
-      legal__entity_type:
+      name: Shook Law LLC
+      entity_type:
         name: Multi Member LLC
         jurisdiction:
           name: Nevada
-    street: 405 Mae Anne Ave Ste 405-9000
+    street: 405 Mae Anne Ave Ste 405-9002
+    city: Reno
+    state: NV
+    country: USA
+    zip: "89523"
+    is_verified: true
+  - entity:
+      name: Neon Law Foundation
+      entity_type:
+        name: 501(c)(3) Non-Profit
+        jurisdiction:
+          name: Nevada
+    street: 405 Mae Anne Ave Ste 405-9999
+    city: Reno
+    state: NV
+    country: USA
+    zip: "89523"
+    is_verified: true
+  - entity:
+      name: shook.family
+      entity_type:
+        name: Family Trust
+        jurisdiction:
+          name: Nevada
+    street: 405 Mae Anne Ave Ste 405-9005
+    city: Reno
+    state: NV
+    country: USA
+    zip: "89523"
+    is_verified: true
+  - entity:
+      name: Nicholas Shook
+      entity_type:
+        name: Human
+        jurisdiction:
+          name: Washington
+    street: 405 Mae Anne Ave Ste 405-9011
+    city: Reno
+    state: NV
+    country: USA
+    zip: "89523"
+    is_verified: true
+  - entity:
+      name: Sagebrush Services LLC
+      entity_type:
+        name: Multi Member LLC
+        jurisdiction:
+          name: Nevada
+    street: 405 Mae Anne Ave Ste 405-9004
     city: Reno
     state: NV
     country: USA

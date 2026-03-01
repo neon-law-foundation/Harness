@@ -124,12 +124,6 @@ struct SeedLoadingTests {
                 .first()
             #expect(shookLaw != nil, "Shook Law LLC not found")
 
-            // Verify Neon Law
-            let neonLaw = try await Entity.query(on: app.db)
-                .filter(\.$name == "Neon Law")
-                .first()
-            #expect(neonLaw != nil, "Neon Law not found")
-
             // Verify Neon Law Foundation
             let neonLawFoundation = try await Entity.query(on: app.db)
                 .filter(\.$name == "Neon Law Foundation")
@@ -177,7 +171,7 @@ struct SeedLoadingTests {
                 .first()
 
             #expect(address != nil, "Sagebrush address not found")
-            #expect(address?.street == "405 Mae Anne Ave Ste 405-9000")
+            #expect(address?.street == "405 Mae Anne Ave Ste 405-9004")
             #expect(address?.city == "Reno")
             #expect(address?.state == "NV")
             #expect(address?.zip == "89523")
