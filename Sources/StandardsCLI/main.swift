@@ -21,7 +21,8 @@ func printUsage() {
           format <file>       Format a Markdown file
                               Converts '-' bullet lists to '*', wraps at 120 chars, trims whitespace
           ddl                 Print CREATE TABLE statements for all schema tables
-          questions list      List all seeded questions with their prompts (macOS only)
+          list questions      List all seeded questions with their prompts (macOS only)
+          list jurisdictions  List all seeded jurisdictions with their types (macOS only)
 
         Options:
           --help, -h          Show this help message
@@ -35,7 +36,8 @@ func printUsage() {
           standards save nevada.md
           standards format nevada.md
           standards ddl
-          standards questions list
+          standards list questions
+          standards list jurisdictions
         """
     )
 }
@@ -101,14 +103,16 @@ Task {
             command = DDLCommand()
 
         #if os(macOS)
-        case "questions":
+        case "list":
             let subCommand = arguments.count > 2 ? arguments[2] : ""
             switch subCommand {
-            case "list":
+            case "questions":
                 command = QuestionsListCommand()
+            case "jurisdictions":
+                command = JurisdictionsListCommand()
             default:
-                print("Error: Unknown questions subcommand: '\(subCommand)'")
-                print("Usage: standards questions list")
+                print("Error: Unknown list subcommand: '\(subCommand)'")
+                print("Usage: standards list <questions|jurisdictions>")
                 exit(1)
             }
         #endif
