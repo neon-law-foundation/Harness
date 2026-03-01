@@ -20,6 +20,7 @@ func printUsage() {
                               Restores front matter and saves to original location
           format <file>       Format a Markdown file
                               Converts '-' bullet lists to '*', wraps at 120 chars, trims whitespace
+          ddl                 Print CREATE TABLE statements for all schema tables
           questions list      List all seeded questions with their prompts (macOS only)
 
         Options:
@@ -33,6 +34,7 @@ func printUsage() {
           standards edit nevada.md
           standards save nevada.md
           standards format nevada.md
+          standards ddl
           standards questions list
         """
     )
@@ -94,6 +96,9 @@ Task {
             }
             let filePath = arguments[2]
             command = FormatCommand(filePath: filePath)
+
+        case "ddl":
+            command = DDLCommand()
 
         #if os(macOS)
         case "questions":
