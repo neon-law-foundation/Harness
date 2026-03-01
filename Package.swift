@@ -63,6 +63,7 @@ let package = Package(
                 "StandardsDAL",
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
+                .product(name: "SQLKit", package: "sql-kit"),
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "Logging", package: "swift-log"),
             ]
@@ -135,6 +136,7 @@ let package = Package(
                 "StandardsDAL",
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
+                .product(name: "SQLKit", package: "sql-kit"),
                 .product(name: "Vapor", package: "vapor"),
             ]
         ),
