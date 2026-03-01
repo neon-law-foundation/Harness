@@ -33,6 +33,8 @@ public struct StandardsDALConfiguration {
             AddVersionToNotations(),
             CreateGitRepositories(),
             AddGitRepositoryToNotations(),
+            CreateMailboxOffices(),
+            UpdateMailboxes(),
         ]
     }
 
@@ -48,6 +50,7 @@ public struct StandardsDALConfiguration {
             "Entity",
             "Credential",
             "Address",
+            "MailboxOffice",
             "Mailbox",
             "PersonEntityRole",
         ]
@@ -190,6 +193,8 @@ public struct StandardsDALConfiguration {
             try await insertCredential(record: record, lookupFields: lookupFields, database: database)
         case "Address":
             try await insertAddress(record: record, lookupFields: lookupFields, database: database)
+        case "MailboxOffice":
+            try await insertMailboxOffice(record: record, lookupFields: lookupFields, database: database)
         case "Mailbox":
             try await insertMailbox(record: record, lookupFields: lookupFields, database: database)
         case "PersonEntityRole":

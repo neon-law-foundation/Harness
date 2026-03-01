@@ -92,11 +92,18 @@ erDiagram
         timestamp updated_at
     }
 
+    MAILBOX_OFFICE {
+        int32 id PK
+        int32 entity_id FK "unique"
+        boolean is_active
+        timestamp inserted_at
+        timestamp updated_at
+    }
+
     MAILBOX {
         int32 id PK
+        int32 mailbox_office_id FK
         int32 address_id FK
-        int mailbox_number "unique per address"
-        boolean is_active
         timestamp inserted_at
         timestamp updated_at
     }
@@ -203,7 +210,9 @@ erDiagram
 
     ENTITY_TYPE ||--|| JURISDICTION : "in"
 
-    ADDRESS ||--o{ MAILBOX : "contains"
+    ENTITY ||--o| MAILBOX_OFFICE : "operates"
+    MAILBOX_OFFICE ||--o{ MAILBOX : "has"
+    ADDRESS ||--o{ MAILBOX : "receives at"
 
     CREDENTIAL ||--|| PERSON : "belongs to"
     CREDENTIAL ||--|| JURISDICTION : "issued by"
@@ -408,7 +417,8 @@ The following entities use JSONB for flexible structured data:
 - `PERSON.email` - Unique email addresses
 - `PROJECT.codename` - Unique project identifiers
 - `QUESTION.code` - Unique question codes
-- `MAILBOX` - Unique (address_id, mailbox_number)
+- `MAILBOX_OFFICE` - Unique (entity_id)
+- `MAILBOX` - Unique (mailbox_office_id, address_id)
 - `SHARE_CLASS` - Unique (entity_id, priority)
 - `ASSIGNED_NOTATION` - Unique open assignments per notation-respondent
 
@@ -425,6 +435,6 @@ For detailed information on specific entities:
 
 This ERD represents the database schema as of the latest migration:
 
-- Migration: `202512230002_AddVersionToNotations`
-- Total Migrations: 20
-- Last Updated: 2025-12-23
+- Migration: `202602280002_UpdateMailboxes`
+- Total Migrations: 22
+- Last Updated: 2026-02-28

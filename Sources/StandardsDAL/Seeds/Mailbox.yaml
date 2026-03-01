@@ -1,22 +1,44 @@
 lookup_fields:
+  - mailbox_office_id
   - address_id
-  - mailbox_number
 records:
-  - address:
+  - mailbox_office:
       entity:
         name: Sagebrush Services LLC
-        entity_type:
-          name: Multi Member LLC
-          jurisdiction:
-            name: Nevada
-            jurisdiction_type: state
-      street: 405 Mae Anne Ave Ste 405-9000
-      city: Reno
-      state: NV
-      country: USA
+    address:
+      entity:
+        name: Shook Law LLC
+      street: 405 Mae Anne Ave Ste 405-9002
       zip: "89523"
-      is_verified: true
-    office:
-      name: Sagebrush Services Mailroom
-    mailbox_number: 9000
-    is_active: true
+  - mailbox_office:
+      entity:
+        name: Sagebrush Services LLC
+    address:
+      entity:
+        name: Neon Law Foundation
+      street: 405 Mae Anne Ave Ste 405-9999
+      zip: "89523"
+  - mailbox_office:
+      entity:
+        name: Sagebrush Services LLC
+    address:
+      entity:
+        name: shook.family
+      street: 405 Mae Anne Ave Ste 405-9005
+      zip: "89523"
+  - mailbox_office:
+      entity:
+        name: Sagebrush Services LLC
+    address:
+      entity:
+        name: Nicholas Shook
+      street: 405 Mae Anne Ave Ste 405-9011
+      zip: "89523"
+  - mailbox_office:
+      entity:
+        name: Sagebrush Services LLC
+    address:
+      entity:
+        name: Sagebrush Services LLC
+      street: 405 Mae Anne Ave Ste 405-9004
+      zip: "89523"

@@ -391,6 +391,34 @@ extension StandardsDALConfiguration {
         try await address.save(on: database)
     }
 
+    // MARK: - MailboxOffice
+
+    public static func insertMailboxOffice(
+        record: [String: Any],
+        lookupFields: [String],
+        database: Database
+    ) async throws {
+        let entityId = try await resolveForeignKey("entity", from: record, database: database)
+
+        if !lookupFields.isEmpty, let entityId = entityId {
+            if let existing = try await MailboxOffice.query(on: database)
+                .filter(\.$entity.$id == entityId)
+                .first()
+            {
+                existing.isActive = record["is_active"] as? Bool ?? existing.isActive
+                try await existing.save(on: database)
+                return
+            }
+        }
+
+        let mailboxOffice = MailboxOffice()
+        if let entityId = entityId {
+            mailboxOffice.$entity.id = entityId
+        }
+        mailboxOffice.isActive = record["is_active"] as? Bool ?? true
+        try await mailboxOffice.save(on: database)
+    }
+
     // MARK: - Mailbox
 
     public static func insertMailbox(
@@ -398,36 +426,43 @@ extension StandardsDALConfiguration {
         lookupFields: [String],
         database: Database
     ) async throws {
-        let mailboxNumber = record["mailbox_number"] as? Int ?? 0
+        let mailboxOfficeId = try await resolveForeignKey(
+            "mailbox_office",
+            from: record,
+            database: database
+        )
+        let addressId = try await resolveForeignKey("address", from: record, database: database)
 
         if !lookupFields.isEmpty {
             var query = Mailbox.query(on: database)
 
-            if lookupFields.contains("mailbox_number") && mailboxNumber > 0 {
-                query = query.filter(\.$mailboxNumber == mailboxNumber)
+            if lookupFields.contains("mailbox_office_id"), let mailboxOfficeId = mailboxOfficeId {
+                query = query.filter(\.$mailboxOffice.$id == mailboxOfficeId)
             }
 
-            if lookupFields.contains("address_id"),
-                let addressId = try await resolveForeignKey("address", from: record, database: database)
-            {
+            if lookupFields.contains("address_id"), let addressId = addressId {
                 query = query.filter(\.$address.$id == addressId)
             }
 
             if let existing = try await query.first() {
-                if let addressId = try await resolveForeignKey("address", from: record, database: database) {
+                if let mailboxOfficeId = mailboxOfficeId {
+                    existing.$mailboxOffice.id = mailboxOfficeId
+                }
+                if let addressId = addressId {
                     existing.$address.id = addressId
                 }
-                existing.isActive = record["is_active"] as? Bool ?? existing.isActive
                 try await existing.save(on: database)
                 return
             }
         }
 
         let mailbox = Mailbox()
-        mailbox.mailboxNumber = mailboxNumber
-        mailbox.isActive = record["is_active"] as? Bool ?? true
 
-        if let addressId = try await resolveForeignKey("address", from: record, database: database) {
+        if let mailboxOfficeId = mailboxOfficeId {
+            mailbox.$mailboxOffice.id = mailboxOfficeId
+        }
+
+        if let addressId = addressId {
             mailbox.$address.id = addressId
         }
 
@@ -535,6 +570,17 @@ extension StandardsDALConfiguration {
                 }
             case "address":
                 return try await findOrCreateAddress(from: nestedData, database: database)
+            case "mailbox_office":
+                if let entityId = try await resolveForeignKey(
+                    "entity",
+                    from: nestedData,
+                    database: database
+                ) {
+                    let mailboxOffice = try await MailboxOffice.query(on: database)
+                        .filter(\.$entity.$id == entityId)
+                        .first()
+                    return mailboxOffice?.id
+                }
             default:
                 break
             }
