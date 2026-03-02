@@ -1,6 +1,0 @@
-lookup_fields:
-  - entity_id
-records:
-  - entity:
-      name: Sagebrush Services LLC
-    is_active: true

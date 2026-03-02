@@ -2,7 +2,7 @@ import FluentKit
 
 struct CreateMailboxOffices: AsyncMigration {
     func prepare(on database: any Database) async throws {
-        try await database.schema(MailboxOffice.schema)
+        try await database.schema("mailbox_offices")
             .field("id", .int32, .identifier(auto: true))
             .field("entity_id", .int32, .references("entities", "id"), .required)
             .field("is_active", .bool, .required)
@@ -13,6 +13,6 @@ struct CreateMailboxOffices: AsyncMigration {
     }
 
     func revert(on database: any Database) async throws {
-        try await database.schema(MailboxOffice.schema).delete()
+        try await database.schema("mailbox_offices").delete()
     }
 }

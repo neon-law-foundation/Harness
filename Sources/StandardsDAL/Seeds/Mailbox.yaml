@@ -1,44 +1,44 @@
 lookup_fields:
-  - mailbox_office_id
+  - entity_id
   - address_id
 records:
-  - mailbox_office:
-      entity:
-        name: Sagebrush Services LLC
+  - entity:
+      name: Sagebrush Services LLC
     address:
       entity:
         name: Shook Law LLC
       street: 405 Mae Anne Ave Ste 405-9002
       zip: "89523"
-  - mailbox_office:
-      entity:
-        name: Sagebrush Services LLC
+    location: reno
+  - entity:
+      name: Sagebrush Services LLC
     address:
       entity:
         name: Neon Law Foundation
       street: 405 Mae Anne Ave Ste 405-9999
       zip: "89523"
-  - mailbox_office:
-      entity:
-        name: Sagebrush Services LLC
+    location: reno
+  - entity:
+      name: Sagebrush Services LLC
     address:
       entity:
         name: shook.family
       street: 405 Mae Anne Ave Ste 405-9005
       zip: "89523"
-  - mailbox_office:
-      entity:
-        name: Sagebrush Services LLC
+    location: reno
+  - entity:
+      name: Sagebrush Services LLC
     address:
       entity:
         name: Nicholas Shook
       street: 405 Mae Anne Ave Ste 405-9011
       zip: "89523"
-  - mailbox_office:
-      entity:
-        name: Sagebrush Services LLC
+    location: reno
+  - entity:
+      name: Sagebrush Services LLC
     address:
       entity:
         name: Sagebrush Services LLC
       street: 405 Mae Anne Ave Ste 405-9004
       zip: "89523"
+    location: reno

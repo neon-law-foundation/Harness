@@ -17,9 +17,9 @@ public struct MailboxRepository: Sendable {
         try await Mailbox.query(on: database).all()
     }
 
-    public func findByMailboxOffice(mailboxOfficeId: Int32) async throws -> [Mailbox] {
+    public func findByEntity(entityId: Int32) async throws -> [Mailbox] {
         try await Mailbox.query(on: database)
-            .filter(\.$mailboxOffice.$id == mailboxOfficeId)
+            .filter(\.$entity.$id == entityId)
             .all()
     }
 
