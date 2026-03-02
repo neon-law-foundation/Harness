@@ -3,8 +3,8 @@ import Fluent
 import FluentPostgresDriver
 import FluentSQLiteDriver
 import Foundation
+import HarnessDAL
 import Logging
-import StandardsDAL
 import Vapor
 
 struct MigrationRequest: Decodable {
@@ -47,7 +47,7 @@ let runtime = LambdaRuntime { (event: MigrationRequest, context: LambdaContext) 
     } else {
         app.databases.use(DatabaseConfigurationFactory.sqlite(.memory), as: .sqlite)
     }
-    for migration in StandardsDALConfiguration.migrations {
+    for migration in HarnessDALConfiguration.migrations {
         app.migrations.add(migration)
     }
     try await app.autoMigrate()
@@ -58,19 +58,19 @@ let runtime = LambdaRuntime { (event: MigrationRequest, context: LambdaContext) 
     switch event.action.lowercased() {
     case "migrate":
         context.logger.info("Running migrations only")
-        migrationsRun = StandardsDALConfiguration.migrations.count
+        migrationsRun = HarnessDALConfiguration.migrations.count
 
     case "seed":
         context.logger.info("Running seeds only")
-        seedsLoaded = try await StandardsDALConfiguration.runSeeds(
+        seedsLoaded = try await HarnessDALConfiguration.runSeeds(
             on: app.db,
             logger: context.logger
         )
 
     case "both", "all":
         context.logger.info("Running migrations and seeds")
-        migrationsRun = StandardsDALConfiguration.migrations.count
-        seedsLoaded = try await StandardsDALConfiguration.runSeeds(
+        migrationsRun = HarnessDALConfiguration.migrations.count
+        seedsLoaded = try await HarnessDALConfiguration.runSeeds(
             on: app.db,
             logger: context.logger
         )
