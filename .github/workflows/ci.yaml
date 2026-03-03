@@ -14,7 +14,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            swift-version: "6.2"
+          - os: macos-latest
+            swift-version: "6.2"
+          - os: windows-latest
+            # setup-swift@v2 does not yet list 6.2 in its Windows toolchain
+            # catalog; use 6.1 until the action is updated.
+            swift-version: "6.1"
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
 
@@ -24,7 +32,7 @@ jobs:
       - name: Install Swift toolchain
         uses: swift-actions/setup-swift@v2
         with:
-          swift-version: "6.2"
+          swift-version: ${{ matrix.swift-version }}
 
       - name: Run Swift Format Lint
         if: runner.os != 'Windows'

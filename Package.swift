@@ -5,6 +5,9 @@ import PackageDescription
 
 let package = Package(
     name: "Harness",
+    platforms: [
+        .macOS(.v15)
+    ],
     products: [
         .library(name: "HarnessDAL", targets: ["HarnessDAL"]),
         .library(name: "HarnessRules", targets: ["HarnessRules"]),
