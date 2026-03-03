@@ -15,7 +15,6 @@ let windowsExcludedTargets: [Target] = [
         name: "MigrationRunner",
         dependencies: [
             "HarnessDAL",
-            .product(name: "Fluent", package: "fluent"),
             .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
             .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
             .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
@@ -38,7 +37,6 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/vapor/fluent-kit.git", from: "1.52.2"),
         .package(url: "https://github.com/vapor/sql-kit.git", from: "3.33.2"),
-        .package(url: "https://github.com/vapor/fluent.git", from: "4.13.0"),
         .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.12.0"),
         .package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.8.1"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.8.0"),
@@ -83,7 +81,6 @@ let package = Package(
             dependencies: [
                 "HarnessRules",
                 "HarnessDAL",
-                .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
                 .product(name: "SQLKit", package: "sql-kit"),
                 .product(name: "NIOPosix", package: "swift-nio"),
@@ -111,7 +108,6 @@ let package = Package(
             dependencies: [
                 "HarnessDAL",
                 "HarnessRules",
-                .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
                 .product(name: "NIOPosix", package: "swift-nio"),
             ]
@@ -122,7 +118,6 @@ let package = Package(
                 "HarnessCLI",
                 "HarnessRules",
                 "HarnessDAL",
-                .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
                 .product(name: "SQLKit", package: "sql-kit"),
                 .product(name: "NIOPosix", package: "swift-nio"),

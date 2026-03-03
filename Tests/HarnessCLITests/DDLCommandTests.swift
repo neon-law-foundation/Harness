@@ -1,4 +1,4 @@
-import Fluent
+import FluentKit
 import FluentSQLiteDriver
 import HarnessDAL
 import SQLKit

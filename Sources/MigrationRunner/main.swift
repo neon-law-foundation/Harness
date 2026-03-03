@@ -1,5 +1,5 @@
 import AWSLambdaRuntime
-import Fluent
+import FluentKit
 import FluentPostgresDriver
 import FluentSQLiteDriver
 import Foundation
