@@ -41,7 +41,22 @@ jobs:
           Write-Host "Installing Swift..."
           $proc = Start-Process -FilePath .\swift-installer.exe -ArgumentList '/quiet', '/norestart' -Wait -PassThru
           if ($proc.ExitCode -ne 0) { throw "Installer exited with code $($proc.ExitCode)" }
-          echo "C:\Program Files\Swift\bin" >> $env:GITHUB_PATH
+          # Read the registry PATH the installer just modified to find swift.exe
+          $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+          $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+          $swiftPaths = ($machinePath + ";" + $userPath).Split(";") |
+            Where-Object { $_ -and (Test-Path (Join-Path $_ "swift.exe")) }
+          if ($swiftPaths) {
+            $swiftPaths | ForEach-Object { Write-Host "Found Swift at: $_"; Add-Content $env:GITHUB_PATH $_ }
+          } else {
+            Write-Host "Swift not in registry PATH, searching filesystem..."
+            $found = Get-ChildItem "C:\Program Files", $env:LOCALAPPDATA `
+              -Recurse -Filter "swift.exe" -ErrorAction SilentlyContinue -Depth 7 |
+              Select-Object -First 1
+            if (-not $found) { throw "swift.exe not found after installation" }
+            Write-Host "Found at: $($found.FullName)"
+            Add-Content $env:GITHUB_PATH $found.DirectoryName
+          }
 
       - name: Run Swift Format Lint
         if: runner.os != 'Windows'
