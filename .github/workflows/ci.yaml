@@ -9,28 +9,54 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  SWIFT_VERSION: "6.2"
+
 jobs:
   tests:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-            swift-version: "6.2"
-          - os: macos-latest
-            swift-version: "6.2"
-          - os: windows-latest
-            swift-version: "6.1"
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
 
     steps:
       - uses: "actions/checkout@v4"
 
-      - name: Install Swift toolchain
+      - name: Install Swift toolchain (macOS / Linux)
+        if: runner.os != 'Windows'
         uses: swift-actions/setup-swift@v2
         with:
-          swift-version: ${{ matrix.swift-version }}
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Install Swift toolchain (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = $env:SWIFT_VERSION
+          $url = "https://download.swift.org/swift-${version}-release/windows10/swift-${version}-RELEASE/swift-${version}-RELEASE-windows10.exe"
+          Write-Host "Downloading Swift $version..."
+          Invoke-WebRequest -Uri $url -OutFile swift-installer.exe -UseBasicParsing
+          Write-Host "Installing Swift..."
+          $proc = Start-Process -FilePath .\swift-installer.exe -ArgumentList '/quiet', '/norestart' -Wait -PassThru
+          if ($proc.ExitCode -ne 0) { throw "Installer exited with code $($proc.ExitCode)" }
+          # Read the registry PATH the installer just modified to find swift.exe
+          $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+          $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+          $swiftPaths = ($machinePath + ";" + $userPath).Split(";") |
+            Where-Object { $_ -and (Test-Path (Join-Path $_ "swift.exe")) }
+          if ($swiftPaths) {
+            $swiftPaths | ForEach-Object { Write-Host "Found Swift at: $_"; Add-Content $env:GITHUB_PATH $_ }
+          } else {
+            Write-Host "Swift not in registry PATH, searching filesystem..."
+            $found = Get-ChildItem "C:\Program Files", $env:LOCALAPPDATA `
+              -Recurse -Filter "swift.exe" -ErrorAction SilentlyContinue -Depth 7 |
+              Select-Object -First 1
+            if (-not $found) { throw "swift.exe not found after installation" }
+            Write-Host "Found at: $($found.FullName)"
+            Add-Content $env:GITHUB_PATH $found.DirectoryName
+          }
 
       - name: Run Swift Format Lint
         if: runner.os != 'Windows'
