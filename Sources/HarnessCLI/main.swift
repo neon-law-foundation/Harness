@@ -72,6 +72,7 @@ Task {
             let filePath = arguments[2]
             command = PDFCommand(inputPath: filePath)
 
+        #if os(macOS)
         case "edit":
             guard arguments.count > 2 else {
                 print("Error: Missing file argument for edit command")
@@ -89,6 +90,7 @@ Task {
             }
             let filePath = arguments[2]
             command = SaveCommand(filePath: filePath)
+        #endif
 
         case "format":
             guard arguments.count > 2 else {

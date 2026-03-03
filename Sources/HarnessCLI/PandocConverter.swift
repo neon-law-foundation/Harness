@@ -1,14 +1,34 @@
 import Foundation
 
 enum PandocConverter {
+    /// Finds the pandoc executable by searching PATH
+    private static func pandocURL() -> URL? {
+        let pathEnv = ProcessInfo.processInfo.environment["PATH"] ?? ""
+        #if os(Windows)
+        let separator: Character = ";"
+        let execName = "pandoc.exe"
+        #else
+        let separator: Character = ":"
+        let execName = "pandoc"
+        #endif
+        for dir in pathEnv.split(separator: separator) {
+            let url = URL(fileURLWithPath: String(dir)).appendingPathComponent(execName)
+            if FileManager.default.isExecutableFile(atPath: url.path) {
+                return url
+            }
+        }
+        return nil
+    }
+
     /// Checks if pandoc is installed and available
     static func isPandocInstalled() -> Bool {
+        guard let url = pandocURL() else { return false }
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
-        process.arguments = ["pandoc"]
+        process.executableURL = url
+        process.arguments = ["--version"]
 
-        let pipe = Pipe()
-        process.standardOutput = pipe
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
 
         do {
             try process.run()
@@ -25,23 +45,22 @@ enum PandocConverter {
     ///   - outputPath: The path where the DOCX file should be saved
     /// - Throws: CommandError if pandoc fails
     static func convertMarkdownToDOCX(markdown: String, outputPath: String) throws {
-        guard isPandocInstalled() else {
-            throw CommandError.setupFailed(
-                "pandoc is not installed. Install it with: brew install pandoc"
-            )
-        }
-
-        let tempInputFile = "/tmp/pandoc-input-\(UUID()).md"
+        let tempInputFile = FileManager.default.temporaryDirectory
+            .appendingPathComponent("pandoc-input-\(UUID()).md").path
         try markdown.write(toFile: tempInputFile, atomically: true, encoding: .utf8)
 
         defer {
             try? FileManager.default.removeItem(atPath: tempInputFile)
         }
 
+        guard let pandoc = pandocURL() else {
+            throw CommandError.setupFailed(
+                "pandoc is not installed. Install it with: brew install pandoc"
+            )
+        }
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+        process.executableURL = pandoc
         process.arguments = [
-            "pandoc",
             tempInputFile,
             "-f", "markdown",
             "-t", "docx",
@@ -67,7 +86,7 @@ enum PandocConverter {
     /// - Returns: The converted markdown content with 120 character line wrapping and page breaks as empty lines
     /// - Throws: CommandError if pandoc fails
     static func convertDOCXToMarkdown(docxPath: String) throws -> String {
-        guard isPandocInstalled() else {
+        guard let pandoc = pandocURL() else {
             throw CommandError.setupFailed(
                 "pandoc is not installed. Install it with: brew install pandoc"
             )
@@ -78,9 +97,8 @@ enum PandocConverter {
         }
 
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+        process.executableURL = pandoc
         process.arguments = [
-            "pandoc",
             docxPath,
             "-f", "docx",
             "-t", "markdown",
