@@ -41,21 +41,20 @@ jobs:
           Write-Host "Installing Swift..."
           $proc = Start-Process -FilePath .\swift-installer.exe -ArgumentList '/quiet', '/norestart' -Wait -PassThru
           if ($proc.ExitCode -ne 0) { throw "Installer exited with code $($proc.ExitCode)" }
-          # Read the registry PATH the installer just modified to find swift.exe
-          $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
-          $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
-          $swiftPaths = ($machinePath + ";" + $userPath).Split(";") |
-            Where-Object { $_ -and (Test-Path (Join-Path $_ "swift.exe")) }
-          if ($swiftPaths) {
-            $swiftPaths | ForEach-Object { Write-Host "Found Swift at: $_"; Add-Content $env:GITHUB_PATH $_ }
-          } else {
-            Write-Host "Swift not in registry PATH, searching filesystem..."
-            $found = Get-ChildItem "C:\Program Files", $env:LOCALAPPDATA `
-              -Recurse -Filter "swift.exe" -ErrorAction SilentlyContinue -Depth 7 |
-              Select-Object -First 1
-            if (-not $found) { throw "swift.exe not found after installation" }
-            Write-Host "Found at: $($found.FullName)"
-            Add-Content $env:GITHUB_PATH $found.DirectoryName
+          # Merge ALL Machine and User environment variables into the runner session.
+          # This ensures SDKROOT and other vars set by the Swift installer are visible
+          # to subsequent steps (following the compnerd/gha-setup-swift approach).
+          foreach ($level in "Machine", "User") {
+            [Environment]::GetEnvironmentVariables($level).GetEnumerator() | ForEach-Object {
+              if ($_.Name -eq "Path") {
+                $_.Value = ("${env:Path};$($_.Value)" -Split ";") -Join ";"
+              }
+              $_
+            } | Set-Content -Path { "Env:$($_.Name)" }
+          }
+          Write-Output "$env:Path" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+          Get-ChildItem Env: | ForEach-Object {
+            "$($_.Name)=$($_.Value)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           }
 
       - name: Run Swift Format Lint
@@ -76,8 +75,14 @@ jobs:
         if: runner.os != 'Windows'
         run: swift build -Xswiftc -warnings-as-errors
 
+      - name: Configure git for Windows NTFS paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.protectNTFS false
+
       - name: Run Swift Build HarnessCLI (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: swift build -Xswiftc -warnings-as-errors --product HarnessCLI
 
       - name: Run tests
