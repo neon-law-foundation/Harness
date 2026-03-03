@@ -146,23 +146,31 @@ jobs:
 
           ## Installation
 
-          ### Homebrew (Recommended)
+          ### macOS — Homebrew (Recommended)
           \`\`\`bash
           brew tap neon-law-foundation/tap
           brew install harness
           \`\`\`
 
+          ### Windows — winget
+          \`\`\`
+          winget install neon-law-foundation.HarnessCLI
+          \`\`\`
+
           ### Manual Download
           Download the appropriate binary for your system:
           - **Apple Silicon (M1/M2/M3)**: \`harness-${VERSION}-macos-arm64.tar.gz\`
-          - **Intel**: \`harness-${VERSION}-macos-x86_64.tar.gz\`
-          - **Universal**: \`harness-${VERSION}-macos-universal.tar.gz\`
+          - **Intel Mac**: \`harness-${VERSION}-macos-x86_64.tar.gz\`
+          - **Universal Mac**: \`harness-${VERSION}-macos-universal.tar.gz\`
+          - **Windows x86_64**: \`harness-${VERSION}-windows-x86_64.zip\`
 
-          Then extract and move to your PATH:
+          **macOS** — extract and move to PATH:
           \`\`\`bash
           tar -xzf harness-${VERSION}-macos-universal.tar.gz
           sudo mv harness /usr/local/bin/
           \`\`\`
+
+          **Windows** — extract zip and move \`harness.exe\` to a directory in your PATH.
           " \
             release/harness-*.tar.gz \
             release/checksums.txt
@@ -252,3 +260,102 @@ jobs:
           git add Formula/harness.rb
           git commit -m "chore: update harness to v${VERSION}"
           git push
+
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(date +"%Y.%m.%d")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check if release already exists
+        id: check_release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if gh release view "v$VERSION" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Swift toolchain
+        if: steps.check_release.outputs.exists == 'false'
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Cache Swift Package Manager dependencies
+        if: steps.check_release.outputs.exists == 'false'
+        uses: actions/cache@v4
+        with:
+          path: |
+            .build
+            ~\AppData\Local\cache\org.swift.swiftpm
+          key: spm-windows-release-${{ hashFiles('Package.swift', 'Package.resolved') }}
+          restore-keys: |
+            spm-windows-release-
+
+      - name: Build HarnessCLI for Windows
+        if: steps.check_release.outputs.exists == 'false'
+        shell: bash
+        run: |
+          swift build -c release --product HarnessCLI
+          mkdir -p dist/windows
+          cp .build/release/HarnessCLI.exe dist/windows/harness.exe
+
+      - name: Package Windows binary
+        if: steps.check_release.outputs.exists == 'false'
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p release
+          cd dist/windows
+          7z a "../../release/harness-${VERSION}-windows-x86_64.zip" harness.exe
+          cd ../../release
+          sha256sum "harness-${VERSION}-windows-x86_64.zip" \
+            > "harness-${VERSION}-windows-x86_64.zip.sha256"
+          cat "harness-${VERSION}-windows-x86_64.zip.sha256"
+
+      - name: Upload Windows artifacts to GitHub Release
+        if: steps.check_release.outputs.exists == 'false'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          gh release upload "v$VERSION" \
+            "release/harness-${VERSION}-windows-x86_64.zip" \
+            "release/harness-${VERSION}-windows-x86_64.zip.sha256"
+
+      - name: Update winget manifest
+        if: steps.check_release.outputs.exists == 'false'
+        shell: bash
+        env:
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+        run: |
+          if [ -z "$WINGET_TOKEN" ]; then
+            echo "::warning::WINGET_TOKEN is not set. Skipping winget manifest update."
+            echo "Please add WINGET_TOKEN secret (classic PAT with public_repo scope) to enable."
+            exit 0
+          fi
+
+          VERSION="${{ steps.version.outputs.version }}"
+          ZIP_URL="https://github.com/neon-law-foundation/Harness/releases/download/v${VERSION}/harness-${VERSION}-windows-x86_64.zip"
+
+          dotnet tool install --global wingetcreate
+
+          wingetcreate update neon-law-foundation.HarnessCLI \
+            --version "$VERSION" \
+            --urls "$ZIP_URL" \
+            --token "$WINGET_TOKEN" \
+            --submit
