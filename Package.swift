@@ -3,9 +3,10 @@
 
 import PackageDescription
 
-// Targets that depend on Vapor or fluent-postgres-driver are excluded on Windows because
-// CNIOBoringSSL (via swift-nio-ssl) fails to compile against Windows SDK 10.0.26100.0.
-// Tracked upstream: https://github.com/apple/swift-nio-ssl/issues/342
+// MigrationRunner depends on fluent-postgres-driver, which pulls in postgres-nio → swift-nio-ssl
+// (CNIOBoringSSL). CNIOBoringSSL fails to compile against Windows SDK 10.0.26100.0 due to
+// winsock.h/winsock2.h redefinition conflicts. Exclude it on Windows until the upstream issue
+// is resolved: https://github.com/apple/swift-nio-ssl/issues/342
 #if os(Windows)
 let windowsExcludedTargets: [Target] = []
 #else
@@ -17,55 +18,11 @@ let windowsExcludedTargets: [Target] = [
             .product(name: "Fluent", package: "fluent"),
             .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
             .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
-            .product(name: "Vapor", package: "vapor"),
             .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
+            .product(name: "NIOPosix", package: "swift-nio"),
             .product(name: "Logging", package: "swift-log"),
         ]
-    ),
-    .executableTarget(
-        name: "HarnessAPIServer",
-        dependencies: [
-            "HarnessDAL",
-            .product(name: "Fluent", package: "fluent"),
-            .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
-            .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
-            .product(name: "Vapor", package: "vapor"),
-            .product(name: "OpenAPIVapor", package: "swift-openapi-vapor"),
-            .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
-            .product(name: "Logging", package: "swift-log"),
-        ],
-        resources: [
-            .copy("Public")
-        ],
-        swiftSettings: [
-            .unsafeFlags(["-parse-as-library"])
-        ],
-        plugins: [
-            .plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator")
-        ]
-    ),
-    .testTarget(
-        name: "HarnessDALTests",
-        dependencies: [
-            "HarnessDAL",
-            "HarnessRules",
-            .product(name: "Fluent", package: "fluent"),
-            .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
-            .product(name: "Vapor", package: "vapor"),
-        ]
-    ),
-    .testTarget(
-        name: "HarnessCLITests",
-        dependencies: [
-            "HarnessCLI",
-            "HarnessRules",
-            "HarnessDAL",
-            .product(name: "Fluent", package: "fluent"),
-            .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
-            .product(name: "SQLKit", package: "sql-kit"),
-            .product(name: "Vapor", package: "vapor"),
-        ]
-    ),
+    )
 ]
 #endif
 
@@ -84,7 +41,6 @@ let package = Package(
         .package(url: "https://github.com/vapor/fluent.git", from: "4.13.0"),
         .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.12.0"),
         .package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.8.1"),
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.121.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.8.0"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.62.0"),
         .package(url: "https://github.com/jpsim/Yams.git", from: "6.2.0"),
@@ -92,7 +48,6 @@ let package = Package(
         .package(url: "https://github.com/awslabs/swift-openapi-lambda.git", from: "2.1.0"),
         .package(url: "https://github.com/apple/swift-openapi-generator.git", from: "1.10.3"),
         .package(url: "https://github.com/apple/swift-openapi-runtime.git", from: "1.9.0"),
-        .package(url: "https://github.com/swift-server/swift-openapi-vapor.git", from: "1.0.1"),
     ],
     targets: [
         .target(
@@ -149,6 +104,28 @@ let package = Package(
             ],
             plugins: [
                 .plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator")
+            ]
+        ),
+        .testTarget(
+            name: "HarnessDALTests",
+            dependencies: [
+                "HarnessDAL",
+                "HarnessRules",
+                .product(name: "Fluent", package: "fluent"),
+                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
+                .product(name: "NIOPosix", package: "swift-nio"),
+            ]
+        ),
+        .testTarget(
+            name: "HarnessCLITests",
+            dependencies: [
+                "HarnessCLI",
+                "HarnessRules",
+                "HarnessDAL",
+                .product(name: "Fluent", package: "fluent"),
+                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
+                .product(name: "SQLKit", package: "sql-kit"),
+                .product(name: "NIOPosix", package: "swift-nio"),
             ]
         ),
     ] + windowsExcludedTargets

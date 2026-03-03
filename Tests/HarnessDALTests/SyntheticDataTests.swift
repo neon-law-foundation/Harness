@@ -2,7 +2,6 @@ import Fluent
 import FluentSQLiteDriver
 import HarnessDAL
 import Testing
-import Vapor
 
 @Suite("Synthetic Data Tests - Edge Cases and Complex Scenarios")
 struct SyntheticDataTests {

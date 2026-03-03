@@ -2,7 +2,6 @@ import Fluent
 import FluentSQLiteDriver
 import HarnessDAL
 import Testing
-import Vapor
 
 @Suite("User Database Operations")
 struct UserTests {
@@ -115,19 +114,19 @@ struct UserTests {
 
     @Test("User can be queried with person relationship")
     func testQueryWithPerson() async throws {
-        try await withApplication { app in
+        try await withDatabase { db in
             let person = Person()
             person.email = "related@example.com"
             person.name = "Related Person"
-            try await person.save(on: app.db)
+            try await person.save(on: db)
 
             let user = User()
             user.$person.id = person.id!
             user.role = .staff
 
-            try await user.save(on: app.db)
+            try await user.save(on: db)
 
-            let found = try await User.query(on: app.db)
+            let found = try await User.query(on: db)
                 .with(\.$person)
                 .filter(\.$person.$id == person.id!)
                 .first()

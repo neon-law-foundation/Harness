@@ -9,11 +9,11 @@ private enum TestError: Error {
     case databaseUnavailable
 }
 
-/// Executes a test with a fresh migrated database and logger.
-func withApplication<T>(
-    _ operation: (any Database, Logger) async throws -> T
+/// Executes a test with a fresh migrated database.
+func withDatabase<T>(
+    _ operation: (any Database) async throws -> T
 ) async throws -> T {
-    var logger = Logger(label: "harness-tests")
+    var logger = Logger(label: "harness-cli-tests")
     logger.logLevel = .error
 
     let databases = Databases(
@@ -53,7 +53,7 @@ func withApplication<T>(
     }
 
     do {
-        let result = try await operation(db, logger)
+        let result = try await operation(db)
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             DispatchQueue.global(qos: .userInitiated).async {
                 databases.shutdown()
@@ -70,11 +70,4 @@ func withApplication<T>(
         }
         throw error
     }
-}
-
-/// Executes a test with a fresh migrated database.
-func withDatabase<T>(
-    _ operation: (any Database) async throws -> T
-) async throws -> T {
-    try await withApplication { db, _ in try await operation(db) }
 }

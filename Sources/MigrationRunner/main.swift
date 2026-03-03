@@ -5,7 +5,7 @@ import FluentSQLiteDriver
 import Foundation
 import HarnessDAL
 import Logging
-import Vapor
+import NIOPosix
 
 struct MigrationRequest: Decodable {
     let action: String  // "migrate" or "seed" or "both"
@@ -18,17 +18,21 @@ struct MigrationResponse: Encodable {
     let seedsLoaded: Int
 }
 
-let runtime = LambdaRuntime { (event: MigrationRequest, context: LambdaContext) async throws -> MigrationResponse in
+let runtime = LambdaRuntime {
+    (
+        event: MigrationRequest,
+        context: LambdaContext
+    ) async throws
+        -> MigrationResponse in
     context.logger.info("Migration Lambda invoked with action: \(event.action)")
 
-    // Create a temporary Vapor Application
-    var vaporEnv = try Environment.detect()
-    vaporEnv.arguments = ["serve"]
+    let databases = Databases(
+        threadPool: NIOThreadPool.singleton,
+        on: MultiThreadedEventLoopGroup.singleton
+    )
 
-    let app = try await Application.make(vaporEnv)
-
-    // Configure database
     let dbEnv = ProcessInfo.processInfo.environment["ENV"]?.lowercased() ?? "production"
+    let dbId: DatabaseID
     if dbEnv == "production" {
         let hostname = ProcessInfo.processInfo.environment["DATABASE_HOST"] ?? "localhost"
         let port = Int(ProcessInfo.processInfo.environment["DATABASE_PORT"] ?? "5432") ?? 5432
@@ -43,14 +47,47 @@ let runtime = LambdaRuntime { (event: MigrationRequest, context: LambdaContext) 
             database: database,
             tls: .disable
         )
-        app.databases.use(DatabaseConfigurationFactory.postgres(configuration: config), as: .psql)
+        databases.use(.postgres(configuration: config), as: .psql)
+        dbId = .psql
     } else {
-        app.databases.use(DatabaseConfigurationFactory.sqlite(.memory), as: .sqlite)
+        databases.use(.sqlite(.memory), as: .sqlite)
+        dbId = .sqlite
     }
+
+    let migrations = Migrations()
     for migration in HarnessDALConfiguration.migrations {
-        app.migrations.add(migration)
+        migrations.add(migration)
     }
-    try await app.autoMigrate()
+
+    let migrator = Migrator(
+        databases: databases,
+        migrations: migrations,
+        logger: context.logger,
+        on: MultiThreadedEventLoopGroup.singleton.any()
+    )
+    try await migrator.setupIfNeeded().get()
+    try await migrator.prepareBatch().get()
+
+    guard
+        let db = databases.database(
+            dbId,
+            logger: context.logger,
+            on: MultiThreadedEventLoopGroup.singleton.any()
+        )
+    else {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.global(qos: .userInitiated).async {
+                databases.shutdown()
+                continuation.resume()
+            }
+        }
+        return MigrationResponse(
+            success: false,
+            message: "Failed to acquire database connection",
+            migrationsRun: 0,
+            seedsLoaded: 0
+        )
+    }
 
     var migrationsRun = 0
     var seedsLoaded = 0
@@ -63,7 +100,7 @@ let runtime = LambdaRuntime { (event: MigrationRequest, context: LambdaContext) 
     case "seed":
         context.logger.info("Running seeds only")
         seedsLoaded = try await HarnessDALConfiguration.runSeeds(
-            on: app.db,
+            on: db,
             logger: context.logger
         )
 
@@ -71,12 +108,17 @@ let runtime = LambdaRuntime { (event: MigrationRequest, context: LambdaContext) 
         context.logger.info("Running migrations and seeds")
         migrationsRun = HarnessDALConfiguration.migrations.count
         seedsLoaded = try await HarnessDALConfiguration.runSeeds(
-            on: app.db,
+            on: db,
             logger: context.logger
         )
 
     default:
-        try await app.asyncShutdown()
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.global(qos: .userInitiated).async {
+                databases.shutdown()
+                continuation.resume()
+            }
+        }
         return MigrationResponse(
             success: false,
             message: "Invalid action: \(event.action). Use 'migrate', 'seed', or 'both'",
@@ -85,7 +127,12 @@ let runtime = LambdaRuntime { (event: MigrationRequest, context: LambdaContext) 
         )
     }
 
-    try await app.asyncShutdown()
+    await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+        DispatchQueue.global(qos: .userInitiated).async {
+            databases.shutdown()
+            continuation.resume()
+        }
+    }
 
     context.logger.info("Migration Lambda completed successfully")
     return MigrationResponse(

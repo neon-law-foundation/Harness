@@ -2,42 +2,41 @@ import Fluent
 import FluentSQLiteDriver
 import HarnessDAL
 import Testing
-import Vapor
 
 @Suite("Seed Loading Tests")
 struct SeedLoadingTests {
 
     @Test("Seeds load without errors")
     func testSeedsLoadSuccessfully() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             // Load all seed files
             let count = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
             // Verify seeds were loaded
             #expect(count > 0, "No seeds were loaded")
 
             // Verify key tables have data
-            let personCount = try await Person.query(on: app.db).count()
+            let personCount = try await Person.query(on: db).count()
             #expect(personCount > 0, "No people were seeded")
 
-            let jurisdictionCount = try await Jurisdiction.query(on: app.db).count()
+            let jurisdictionCount = try await Jurisdiction.query(on: db).count()
             #expect(jurisdictionCount > 0, "No jurisdictions were seeded")
         }
     }
 
     @Test("Nick's person record loads correctly")
     func testNickPersonRecord() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             _ = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
             // Find Nick's person record
-            let nick = try await Person.query(on: app.db)
+            let nick = try await Person.query(on: db)
                 .filter(\.$email == "nick@neonlaw.com")
                 .first()
 
@@ -49,21 +48,21 @@ struct SeedLoadingTests {
 
     @Test("Nick's user account loads correctly")
     func testNickUserAccount() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             _ = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
             // Find Nick's person
-            let nick = try await Person.query(on: app.db)
+            let nick = try await Person.query(on: db)
                 .filter(\.$email == "nick@neonlaw.com")
                 .first()
 
             #expect(nick != nil, "Nick's person record not found")
 
             // Find Nick's user account
-            let user = try await User.query(on: app.db)
+            let user = try await User.query(on: db)
                 .filter(\.$person.$id == nick!.id!)
                 .first()
 
@@ -74,21 +73,21 @@ struct SeedLoadingTests {
 
     @Test("Nick's bar credentials load correctly")
     func testNickCredentials() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             _ = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
             // Find Nick's person
-            let nick = try await Person.query(on: app.db)
+            let nick = try await Person.query(on: db)
                 .filter(\.$email == "nick@neonlaw.com")
                 .first()
 
             #expect(nick != nil, "Nick's person record not found")
 
             // Find all credentials
-            let credentials = try await Credential.query(on: app.db)
+            let credentials = try await Credential.query(on: db)
                 .filter(\.$person.$id == nick!.id!)
                 .with(\.$jurisdiction)
                 .all()
@@ -112,38 +111,38 @@ struct SeedLoadingTests {
 
     @Test("Nick's entities load correctly")
     func testNickEntities() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             _ = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
             // Verify Shook Law LLC
-            let shookLaw = try await Entity.query(on: app.db)
+            let shookLaw = try await Entity.query(on: db)
                 .filter(\.$name == "Shook Law LLC")
                 .first()
             #expect(shookLaw != nil, "Shook Law LLC not found")
 
             // Verify Neon Law Foundation
-            let neonLawFoundation = try await Entity.query(on: app.db)
+            let neonLawFoundation = try await Entity.query(on: db)
                 .filter(\.$name == "Neon Law Foundation")
                 .first()
             #expect(neonLawFoundation != nil, "Neon Law Foundation not found")
 
             // Verify shook.family trust
-            let shookFamily = try await Entity.query(on: app.db)
+            let shookFamily = try await Entity.query(on: db)
                 .filter(\.$name == "shook.family")
                 .first()
             #expect(shookFamily != nil, "shook.family trust not found")
 
             // Verify Nicholas Shook (Human entity)
-            let nicholasShook = try await Entity.query(on: app.db)
+            let nicholasShook = try await Entity.query(on: db)
                 .filter(\.$name == "Nicholas Shook")
                 .first()
             #expect(nicholasShook != nil, "Nicholas Shook entity not found")
 
             // Verify Sagebrush Services LLC
-            let sagebrush = try await Entity.query(on: app.db)
+            let sagebrush = try await Entity.query(on: db)
                 .filter(\.$name == "Sagebrush Services LLC")
                 .first()
             #expect(sagebrush != nil, "Sagebrush Services LLC not found")
@@ -152,21 +151,21 @@ struct SeedLoadingTests {
 
     @Test("Sagebrush Services address loads correctly")
     func testSagebrushAddress() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             _ = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
             // Find Sagebrush Services LLC
-            let sagebrush = try await Entity.query(on: app.db)
+            let sagebrush = try await Entity.query(on: db)
                 .filter(\.$name == "Sagebrush Services LLC")
                 .first()
 
             #expect(sagebrush != nil, "Sagebrush Services LLC not found")
 
             // Find its address
-            let address = try await Address.query(on: app.db)
+            let address = try await Address.query(on: db)
                 .filter(\.$entity.$id == sagebrush!.id!)
                 .first()
 
@@ -182,13 +181,13 @@ struct SeedLoadingTests {
 
     @Test("All US jurisdictions load")
     func testAllJurisdictionsLoad() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             _ = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
-            let jurisdictions = try await Jurisdiction.query(on: app.db).all()
+            let jurisdictions = try await Jurisdiction.query(on: db).all()
 
             // Should have all 50 states + DC + other jurisdictions
             #expect(jurisdictions.count >= 51, "Missing US jurisdictions")
@@ -208,21 +207,21 @@ struct SeedLoadingTests {
 
     @Test("Entity types load correctly")
     func testEntityTypesLoad() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             _ = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
             // Find Nevada jurisdiction
-            let nevada = try await Jurisdiction.query(on: app.db)
+            let nevada = try await Jurisdiction.query(on: db)
                 .filter(\.$code == "NV")
                 .first()
 
             #expect(nevada != nil, "Nevada jurisdiction not found")
 
             // Verify entity types for Nevada
-            let entityTypes = try await EntityType.query(on: app.db)
+            let entityTypes = try await EntityType.query(on: db)
                 .filter(\.$jurisdiction.$id == nevada!.id!)
                 .all()
 
@@ -242,32 +241,32 @@ struct SeedLoadingTests {
 
     @Test("Seed idempotency - running seeds twice does not create duplicates")
     func testSeedIdempotency() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             // Load seeds first time
             let count1 = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
             #expect(count1 > 0, "No seeds loaded on first run")
 
             // Count records after first load
-            let personCount1 = try await Person.query(on: app.db).count()
-            let entityCount1 = try await Entity.query(on: app.db).count()
-            let credentialCount1 = try await Credential.query(on: app.db).count()
+            let personCount1 = try await Person.query(on: db).count()
+            let entityCount1 = try await Entity.query(on: db).count()
+            let credentialCount1 = try await Credential.query(on: db).count()
 
             // Load seeds second time
             let count2 = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
             #expect(count2 == count1, "Seed count changed on second run")
 
             // Count records after second load
-            let personCount2 = try await Person.query(on: app.db).count()
-            let entityCount2 = try await Entity.query(on: app.db).count()
-            let credentialCount2 = try await Credential.query(on: app.db).count()
+            let personCount2 = try await Person.query(on: db).count()
+            let entityCount2 = try await Entity.query(on: db).count()
+            let credentialCount2 = try await Credential.query(on: db).count()
 
             // Verify no duplicates were created
             #expect(personCount1 == personCount2, "Person records duplicated")
@@ -275,7 +274,7 @@ struct SeedLoadingTests {
             #expect(credentialCount1 == credentialCount2, "Credential records duplicated")
 
             // Verify Nick's person record still exists and is unique
-            let nicks = try await Person.query(on: app.db)
+            let nicks = try await Person.query(on: db)
                 .filter(\.$email == "nick@neonlaw.com")
                 .all()
 
@@ -285,14 +284,14 @@ struct SeedLoadingTests {
 
     @Test("Seed data integrity - credentials link to correct person")
     func testCredentialPersonRelationship() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             _ = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
             // Find Nick's credentials
-            let credentials = try await Credential.query(on: app.db)
+            let credentials = try await Credential.query(on: db)
                 .with(\.$person)
                 .with(\.$jurisdiction)
                 .all()
@@ -312,14 +311,14 @@ struct SeedLoadingTests {
 
     @Test("Seed data integrity - entities have valid entity types")
     func testEntityTypeRelationship() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             _ = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
             // Find all seeded entities
-            let entities = try await Entity.query(on: app.db)
+            let entities = try await Entity.query(on: db)
                 .with(\.$legalEntityType)
                 .all()
 
@@ -337,13 +336,13 @@ struct SeedLoadingTests {
 
     @Test("Questions seed loads all prompts")
     func testQuestionsLoad() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             _ = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
-            let questions = try await Question.query(on: app.db).all()
+            let questions = try await Question.query(on: db).all()
             #expect(questions.count > 0, "No questions were seeded")
 
             for question in questions {
@@ -351,7 +350,7 @@ struct SeedLoadingTests {
                 #expect(!question.prompt.isEmpty, "Question has empty prompt")
             }
 
-            let personalName = try await Question.query(on: app.db)
+            let personalName = try await Question.query(on: db)
                 .filter(\.$code == "personal_name")
                 .first()
             #expect(personalName != nil, "personal_name question not found")
@@ -361,20 +360,20 @@ struct SeedLoadingTests {
 
     @Test("Seed data integrity - addresses link to entities")
     func testAddressEntityRelationship() async throws {
-        try await withApplication { app in
+        try await withApplication { db, logger in
             _ = try await HarnessDALConfiguration.runSeeds(
-                on: app.db,
-                logger: app.logger
+                on: db,
+                logger: logger
             )
 
             // Find Sagebrush address
-            let sagebrush = try await Entity.query(on: app.db)
+            let sagebrush = try await Entity.query(on: db)
                 .filter(\.$name == "Sagebrush Services LLC")
                 .first()
 
             #expect(sagebrush != nil, "Sagebrush not found")
 
-            let address = try await Address.query(on: app.db)
+            let address = try await Address.query(on: db)
                 .filter(\.$entity.$id == sagebrush!.id!)
                 .with(\.$entity)
                 .first()

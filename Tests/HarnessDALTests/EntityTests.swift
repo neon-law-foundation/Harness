@@ -2,7 +2,6 @@ import Fluent
 import FluentSQLiteDriver
 import HarnessDAL
 import Testing
-import Vapor
 
 @Suite("Entity Database Operations")
 struct EntityTests {
