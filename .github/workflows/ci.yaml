@@ -73,7 +73,12 @@ jobs:
             spm-${{ runner.os }}-
 
       - name: Run Swift Build (Strict - Fail on Warnings)
+        if: runner.os != 'Windows'
         run: swift build -Xswiftc -warnings-as-errors
+
+      - name: Run Swift Build HarnessCLI (Windows)
+        if: runner.os == 'Windows'
+        run: swift build -Xswiftc -warnings-as-errors --product HarnessCLI
 
       - name: Run tests
         run: swift test
