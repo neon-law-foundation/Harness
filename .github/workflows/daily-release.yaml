@@ -1,8 +1,8 @@
 ---
 # Daily Release Workflow
 #
-# Builds the StandardsCLI for arm64, x86_64, and universal macOS targets, creates a versioned
-# GitHub release (YYYY.MM.DD format), and updates Formula/standards.rb in the
+# Builds the HarnessCLI for arm64, x86_64, and universal macOS targets, creates a versioned
+# GitHub release (YYYY.MM.DD format), and updates Formula/harness.rb in the
 # neon-law-foundation/homebrew-tap repository so `brew tap neon-law-foundation/tap` picks up
 # the new version automatically.
 #
@@ -74,41 +74,41 @@ jobs:
       - name: Build for Apple Silicon (arm64)
         if: steps.check_release.outputs.exists == 'false'
         run: |
-          swift build -c release --product StandardsCLI --arch arm64
+          swift build -c release --product HarnessCLI --arch arm64
           mkdir -p dist/arm64
-          cp .build/release/StandardsCLI dist/arm64/standards
+          cp .build/release/HarnessCLI dist/arm64/harness
 
       - name: Build for Intel (x86_64)
         if: steps.check_release.outputs.exists == 'false'
         run: |
-          swift build -c release --product StandardsCLI --arch x86_64
+          swift build -c release --product HarnessCLI --arch x86_64
           mkdir -p dist/x86_64
-          cp .build/release/StandardsCLI dist/x86_64/standards
+          cp .build/release/HarnessCLI dist/x86_64/harness
 
       - name: Create universal binary
         if: steps.check_release.outputs.exists == 'false'
         run: |
           mkdir -p dist/universal
           lipo -create \
-            dist/arm64/standards \
-            dist/x86_64/standards \
-            -output dist/universal/standards
+            dist/arm64/harness \
+            dist/x86_64/harness \
+            -output dist/universal/harness
           # Verify the universal binary
-          lipo -info dist/universal/standards
+          lipo -info dist/universal/harness
 
       - name: Verify binaries
         if: steps.check_release.outputs.exists == 'false'
         run: |
           echo "Verifying arm64 binary..."
-          file dist/arm64/standards
-          dist/arm64/standards --help || true
+          file dist/arm64/harness
+          dist/arm64/harness --help || true
 
           echo "Verifying x86_64 binary..."
-          file dist/x86_64/standards
+          file dist/x86_64/harness
 
           echo "Verifying universal binary..."
-          file dist/universal/standards
-          dist/universal/standards --help
+          file dist/universal/harness
+          dist/universal/harness --help
 
       - name: Package binaries
         if: steps.check_release.outputs.exists == 'false'
@@ -117,16 +117,16 @@ jobs:
           mkdir -p release
 
           # Package arm64
-          tar -czf "release/standards-${VERSION}-macos-arm64.tar.gz" \
-            -C dist/arm64 standards
+          tar -czf "release/harness-${VERSION}-macos-arm64.tar.gz" \
+            -C dist/arm64 harness
 
           # Package x86_64
-          tar -czf "release/standards-${VERSION}-macos-x86_64.tar.gz" \
-            -C dist/x86_64 standards
+          tar -czf "release/harness-${VERSION}-macos-x86_64.tar.gz" \
+            -C dist/x86_64 harness
 
           # Package universal
-          tar -czf "release/standards-${VERSION}-macos-universal.tar.gz" \
-            -C dist/universal standards
+          tar -czf "release/harness-${VERSION}-macos-universal.tar.gz" \
+            -C dist/universal harness
 
           # Generate checksums
           cd release
@@ -141,7 +141,7 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           gh release create "v$VERSION" \
-            --title "Standards CLI v$VERSION" \
+            --title "Harness CLI v$VERSION" \
             --notes "Daily automated release for $(date +%Y-%m-%d).
 
           ## Installation
@@ -149,22 +149,22 @@ jobs:
           ### Homebrew (Recommended)
           \`\`\`bash
           brew tap neon-law-foundation/tap
-          brew install standards
+          brew install harness
           \`\`\`
 
           ### Manual Download
           Download the appropriate binary for your system:
-          - **Apple Silicon (M1/M2/M3)**: \`standards-${VERSION}-macos-arm64.tar.gz\`
-          - **Intel**: \`standards-${VERSION}-macos-x86_64.tar.gz\`
-          - **Universal**: \`standards-${VERSION}-macos-universal.tar.gz\`
+          - **Apple Silicon (M1/M2/M3)**: \`harness-${VERSION}-macos-arm64.tar.gz\`
+          - **Intel**: \`harness-${VERSION}-macos-x86_64.tar.gz\`
+          - **Universal**: \`harness-${VERSION}-macos-universal.tar.gz\`
 
           Then extract and move to your PATH:
           \`\`\`bash
-          tar -xzf standards-${VERSION}-macos-universal.tar.gz
-          sudo mv standards /usr/local/bin/
+          tar -xzf harness-${VERSION}-macos-universal.tar.gz
+          sudo mv harness /usr/local/bin/
           \`\`\`
           " \
-            release/standards-*.tar.gz \
+            release/harness-*.tar.gz \
             release/checksums.txt
 
       - name: Get universal binary SHA256
@@ -172,7 +172,7 @@ jobs:
         id: sha256
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          SHA256=$(shasum -a 256 "release/standards-${VERSION}-macos-universal.tar.gz" | awk '{print $1}')
+          SHA256=$(shasum -a 256 "release/harness-${VERSION}-macos-universal.tar.gz" | awk '{print $1}')
           echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
           echo "SHA256: $SHA256"
 
@@ -181,8 +181,8 @@ jobs:
         id: checksums
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          ARM64_SHA=$(shasum -a 256 "release/standards-${VERSION}-macos-arm64.tar.gz" | awk '{print $1}')
-          X86_64_SHA=$(shasum -a 256 "release/standards-${VERSION}-macos-x86_64.tar.gz" | awk '{print $1}')
+          ARM64_SHA=$(shasum -a 256 "release/harness-${VERSION}-macos-arm64.tar.gz" | awk '{print $1}')
+          X86_64_SHA=$(shasum -a 256 "release/harness-${VERSION}-macos-x86_64.tar.gz" | awk '{print $1}')
           echo "arm64_sha=$ARM64_SHA" >> "$GITHUB_OUTPUT"
           echo "x86_64_sha=$X86_64_SHA" >> "$GITHUB_OUTPUT"
 
@@ -205,50 +205,50 @@ jobs:
           git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/neon-law-foundation/homebrew-tap.git" tap
 
           # Generate updated formula (no leading whitespace)
-          cat > tap/Formula/standards.rb << 'FORMULA_EOF'
-          class Standards < Formula
+          cat > tap/Formula/harness.rb << 'FORMULA_EOF'
+          class Harness < Formula
             desc "Legal standards CLI for Markdown linting, PDF conversion, and document management"
-            homepage "https://github.com/neon-law-foundation/SagebrushStandards"
+            homepage "https://github.com/neon-law-foundation/Harness"
             version "VERSION_PLACEHOLDER"
             license "Apache-2.0"
 
             on_macos do
               on_arm do
-                url "https://github.com/neon-law-foundation/SagebrushStandards/releases/download/vVERSION_PLACEHOLDER/standards-VERSION_PLACEHOLDER-macos-arm64.tar.gz"
+                url "https://github.com/neon-law-foundation/Harness/releases/download/vVERSION_PLACEHOLDER/harness-VERSION_PLACEHOLDER-macos-arm64.tar.gz"
                 sha256 "ARM64_SHA_PLACEHOLDER"
               end
               on_intel do
-                url "https://github.com/neon-law-foundation/SagebrushStandards/releases/download/vVERSION_PLACEHOLDER/standards-VERSION_PLACEHOLDER-macos-x86_64.tar.gz"
+                url "https://github.com/neon-law-foundation/Harness/releases/download/vVERSION_PLACEHOLDER/harness-VERSION_PLACEHOLDER-macos-x86_64.tar.gz"
                 sha256 "X86_64_SHA_PLACEHOLDER"
               end
             end
 
             def install
-              bin.install "standards"
+              bin.install "harness"
             end
 
             test do
-              assert_match "standards", shell_output("#{bin}/standards --version")
+              assert_match "harness", shell_output("#{bin}/harness --version")
             end
           end
           FORMULA_EOF
 
           # Replace placeholders with actual values
-          sed -i '' "s/VERSION_PLACEHOLDER/${VERSION}/g" tap/Formula/standards.rb
-          sed -i '' "s/ARM64_SHA_PLACEHOLDER/${ARM64_SHA}/g" tap/Formula/standards.rb
-          sed -i '' "s/X86_64_SHA_PLACEHOLDER/${X86_64_SHA}/g" tap/Formula/standards.rb
+          sed -i '' "s/VERSION_PLACEHOLDER/${VERSION}/g" tap/Formula/harness.rb
+          sed -i '' "s/ARM64_SHA_PLACEHOLDER/${ARM64_SHA}/g" tap/Formula/harness.rb
+          sed -i '' "s/X86_64_SHA_PLACEHOLDER/${X86_64_SHA}/g" tap/Formula/harness.rb
 
           # Remove leading whitespace from heredoc (caused by YAML indentation)
-          sed -i '' 's/^          //' tap/Formula/standards.rb
+          sed -i '' 's/^          //' tap/Formula/harness.rb
 
           # Show the generated formula
           echo "Generated formula:"
-          cat tap/Formula/standards.rb
+          cat tap/Formula/harness.rb
 
           # Commit and push
           cd tap
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          git add Formula/standards.rb
-          git commit -m "chore: update standards to v${VERSION}"
+          git add Formula/harness.rb
+          git commit -m "chore: update harness to v${VERSION}"
           git push

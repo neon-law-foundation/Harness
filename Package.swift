@@ -4,13 +4,13 @@
 import PackageDescription
 
 let package = Package(
-    name: "Standards",
+    name: "Harness",
     platforms: [
         .macOS(.v15)
     ],
     products: [
-        .library(name: "SagebrushDAL", targets: ["StandardsDAL"]),
-        .library(name: "SagebrushRules", targets: ["StandardsRules"]),
+        .library(name: "HarnessDAL", targets: ["HarnessDAL"]),
+        .library(name: "HarnessRules", targets: ["HarnessRules"]),
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/fluent-kit.git", from: "1.52.2"),
@@ -29,15 +29,15 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "StandardsRules",
+            name: "HarnessRules",
             dependencies: [
                 .product(name: "Yams", package: "Yams")
             ]
         ),
         .target(
-            name: "StandardsDAL",
+            name: "HarnessDAL",
             dependencies: [
-                "StandardsRules",
+                "HarnessRules",
                 .product(name: "FluentKit", package: "fluent-kit"),
                 .product(name: "FluentSQL", package: "fluent-kit"),
                 .product(name: "SQLKit", package: "sql-kit"),
@@ -57,10 +57,10 @@ let package = Package(
             ]
         ),
         .executableTarget(
-            name: "StandardsCLI",
+            name: "HarnessCLI",
             dependencies: [
-                "StandardsRules",
-                "StandardsDAL",
+                "HarnessRules",
+                "HarnessDAL",
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
                 .product(name: "SQLKit", package: "sql-kit"),
@@ -71,7 +71,7 @@ let package = Package(
         .executableTarget(
             name: "MigrationRunner",
             dependencies: [
-                "StandardsDAL",
+                "HarnessDAL",
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
@@ -81,9 +81,9 @@ let package = Package(
             ]
         ),
         .executableTarget(
-            name: "StandardsAPI",
+            name: "HarnessAPI",
             dependencies: [
-                "StandardsDAL",
+                "HarnessDAL",
                 .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
                 .product(name: "OpenAPILambda", package: "swift-openapi-lambda"),
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
@@ -97,9 +97,9 @@ let package = Package(
             ]
         ),
         .executableTarget(
-            name: "StandardsAPIServer",
+            name: "HarnessAPIServer",
             dependencies: [
-                "StandardsDAL",
+                "HarnessDAL",
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
@@ -119,21 +119,21 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "StandardsDALTests",
+            name: "HarnessDALTests",
             dependencies: [
-                "StandardsDAL",
-                "StandardsRules",
+                "HarnessDAL",
+                "HarnessRules",
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
                 .product(name: "Vapor", package: "vapor"),
             ]
         ),
         .testTarget(
-            name: "StandardsCLITests",
+            name: "HarnessCLITests",
             dependencies: [
-                "StandardsCLI",
-                "StandardsRules",
-                "StandardsDAL",
+                "HarnessCLI",
+                "HarnessRules",
+                "HarnessDAL",
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
                 .product(name: "SQLKit", package: "sql-kit"),

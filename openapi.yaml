@@ -1,11 +1,11 @@
 openapi: 3.1.0
 info:
-  title: Sagebrush Standards API
+  title: Harness API
   description: API for managing legal standards, entities, credentials, and notations
   version: 1.0.0
   contact:
     name: Neon Law Foundation
-    url: https://github.com/neon-law-foundation/SagebrushStandards
+    url: https://github.com/neon-law-foundation/Harness
 
 servers:
   - url: https://api.sagebrush.services
