@@ -22,7 +22,7 @@ struct LintCommand: Command {
         }
 
         let dbManager = try await DatabaseManager(seed: true)
-        let repository = QuestionRepository(database: dbManager.getDatabase())
+        let repository = QuestionRepository(database: await dbManager.getDatabase())
         let allQuestions = try await repository.findAll()
         try await dbManager.shutdown()
         let validCodes = Set(allQuestions.map(\.code))

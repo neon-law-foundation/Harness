@@ -3,7 +3,7 @@ import SQLKit
 struct DDLCommand: Command {
     func run() async throws {
         let dbManager = try await DatabaseManager()
-        let database = dbManager.getDatabase()
+        let database = await dbManager.getDatabase()
 
         guard let sqlDb = database as? SQLDatabase else {
             throw CommandError.setupFailed("Database does not support raw SQL")

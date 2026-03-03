@@ -4,7 +4,7 @@ import HarnessDAL
 struct QuestionsListCommand: Command {
     func run() async throws {
         let dbManager = try await DatabaseManager(seed: true)
-        let database = dbManager.getDatabase()
+        let database = await dbManager.getDatabase()
 
         let repository = QuestionRepository(database: database)
         let questions = try await repository.findAll()

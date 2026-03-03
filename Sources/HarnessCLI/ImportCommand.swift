@@ -91,7 +91,7 @@ struct ImportCommand: Command {
         print("✅ All files valid. Starting import to database...\n")
 
         let dbManager = try await DatabaseManager()
-        let database = dbManager.getDatabase()
+        let database = await dbManager.getDatabase()
         let notationService = NotationService(database: database)
         let importer = NotationImporter(notationService: notationService, logger: logger)
 

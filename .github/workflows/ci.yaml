@@ -71,24 +71,13 @@ jobs:
           restore-keys: |
             spm-${{ runner.os }}-
 
-      - name: Run Swift Build (Strict - Fail on Warnings)
-        if: runner.os != 'Windows'
-        run: swift build -Xswiftc -warnings-as-errors
-
       - name: Configure git for Windows NTFS paths
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.protectNTFS false
 
-      - name: Run Swift Build HarnessCLI (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: swift build -Xswiftc -warnings-as-errors --product HarnessCLI
+      - name: Run Swift Build (Strict - Fail on Warnings)
+        run: swift build -Xswiftc -warnings-as-errors
 
-      # swift test is skipped on Windows because CNIOBoringSSL (via swift-nio-ssl → Vapor)
-      # fails to compile against Windows SDK 10.0.26100.0 due to winsock.h/winsock2.h
-      # redefinition conflicts. Tracked upstream: https://github.com/apple/swift-nio-ssl/issues/342
-      # Re-enable once https://github.com/apple/swift-nio-ssl/pull/567 is merged and released.
       - name: Run tests
-        if: runner.os != 'Windows'
         run: swift test

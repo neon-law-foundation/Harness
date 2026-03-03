@@ -4,7 +4,7 @@ import HarnessDAL
 struct JurisdictionsListCommand: Command {
     func run() async throws {
         let dbManager = try await DatabaseManager(seed: true)
-        let database = dbManager.getDatabase()
+        let database = await dbManager.getDatabase()
 
         let repository = JurisdictionRepository(database: database)
         let jurisdictions = try await repository.findAll()
