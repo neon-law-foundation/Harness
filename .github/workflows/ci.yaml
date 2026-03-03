@@ -9,30 +9,39 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  SWIFT_VERSION: "6.2"
+
 jobs:
   tests:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-            swift-version: "6.2"
-          - os: macos-latest
-            swift-version: "6.2"
-          - os: windows-latest
-            # setup-swift@v2 does not yet list 6.2 in its Windows toolchain
-            # catalog; use 6.1 until the action is updated.
-            swift-version: "6.1"
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
 
     steps:
       - uses: "actions/checkout@v4"
 
-      - name: Install Swift toolchain
+      - name: Install Swift toolchain (macOS / Linux)
+        if: runner.os != 'Windows'
         uses: swift-actions/setup-swift@v2
         with:
-          swift-version: ${{ matrix.swift-version }}
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Install Swift toolchain (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = $env:SWIFT_VERSION
+          $url = "https://download.swift.org/swift-${version}-release/windows10/swift-${version}-RELEASE/swift-${version}-RELEASE-windows10.exe"
+          Write-Host "Downloading Swift $version..."
+          Invoke-WebRequest -Uri $url -OutFile swift-installer.exe -UseBasicParsing
+          Write-Host "Installing Swift..."
+          $proc = Start-Process -FilePath .\swift-installer.exe -ArgumentList '/quiet', '/norestart' -Wait -PassThru
+          if ($proc.ExitCode -ne 0) { throw "Installer exited with code $($proc.ExitCode)" }
+          echo "C:\Program Files\Swift\bin" >> $env:GITHUB_PATH
 
       - name: Run Swift Format Lint
         if: runner.os != 'Windows'
