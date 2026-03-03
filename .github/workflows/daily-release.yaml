@@ -341,11 +341,10 @@ jobs:
         if: steps.check_release.outputs.exists == 'false'
         shell: bash
         env:
-          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
-          if [ -z "$WINGET_TOKEN" ]; then
-            echo "::warning::WINGET_TOKEN is not set. Skipping winget manifest update."
-            echo "Please add WINGET_TOKEN secret (classic PAT with public_repo scope) to enable."
+          if [ -z "$HOMEBREW_TAP_TOKEN" ]; then
+            echo "::warning::HOMEBREW_TAP_TOKEN is not set. Skipping winget manifest update."
             exit 0
           fi
 
@@ -357,5 +356,5 @@ jobs:
           wingetcreate update neon-law-foundation.HarnessCLI \
             --version "$VERSION" \
             --urls "$ZIP_URL" \
-            --token "$WINGET_TOKEN" \
+            --token "$HOMEBREW_TAP_TOKEN" \
             --submit
