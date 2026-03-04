@@ -43,9 +43,6 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.62.0"),
         .package(url: "https://github.com/jpsim/Yams.git", from: "6.2.0"),
         .package(url: "https://github.com/awslabs/swift-aws-lambda-runtime.git", from: "2.5.1"),
-        .package(url: "https://github.com/awslabs/swift-openapi-lambda.git", from: "2.1.0"),
-        .package(url: "https://github.com/apple/swift-openapi-generator.git", from: "1.10.3"),
-        .package(url: "https://github.com/apple/swift-openapi-runtime.git", from: "1.9.0"),
     ],
     targets: [
         .target(
@@ -85,22 +82,6 @@ let package = Package(
                 .product(name: "SQLKit", package: "sql-kit"),
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "Logging", package: "swift-log"),
-            ]
-        ),
-        .executableTarget(
-            name: "HarnessAPI",
-            dependencies: [
-                "HarnessDAL",
-                .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
-                .product(name: "OpenAPILambda", package: "swift-openapi-lambda"),
-                .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
-                .product(name: "Logging", package: "swift-log"),
-            ],
-            swiftSettings: [
-                .unsafeFlags(["-parse-as-library"])
-            ],
-            plugins: [
-                .plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator")
             ]
         ),
         .testTarget(
