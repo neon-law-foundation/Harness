@@ -3,27 +3,6 @@
 
 import PackageDescription
 
-// MigrationRunner depends on fluent-postgres-driver, which pulls in postgres-nio → swift-nio-ssl
-// (CNIOBoringSSL). CNIOBoringSSL fails to compile against Windows SDK 10.0.26100.0 due to
-// winsock.h/winsock2.h redefinition conflicts. Exclude it on Windows until the upstream issue
-// is resolved: https://github.com/apple/swift-nio-ssl/issues/342
-#if os(Windows)
-let windowsExcludedTargets: [Target] = []
-#else
-let windowsExcludedTargets: [Target] = [
-    .executableTarget(
-        name: "MigrationRunner",
-        dependencies: [
-            "HarnessDAL",
-            .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
-            .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
-            .product(name: "NIOPosix", package: "swift-nio"),
-            .product(name: "Logging", package: "swift-log"),
-        ]
-    )
-]
-#endif
-
 let package = Package(
     name: "Harness",
     platforms: [
@@ -36,7 +15,6 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/vapor/fluent-kit.git", from: "1.52.2"),
         .package(url: "https://github.com/vapor/sql-kit.git", from: "3.33.2"),
-        .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.12.0"),
         .package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.8.1"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.8.0"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.62.0"),
@@ -102,5 +80,5 @@ let package = Package(
                 .product(name: "NIOPosix", package: "swift-nio"),
             ]
         ),
-    ] + windowsExcludedTargets
+    ]
 )
