@@ -9,7 +9,8 @@ import NIOPosix
 var logger = Logger(label: "migration-runner")
 logger.logLevel = .info
 
-let action = CommandLine.arguments.count > 1
+let action =
+    CommandLine.arguments.count > 1
     ? CommandLine.arguments[1]
     : (ProcessInfo.processInfo.environment["MIGRATION_ACTION"] ?? "migrate")
 
