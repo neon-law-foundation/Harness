@@ -17,7 +17,6 @@ let windowsExcludedTargets: [Target] = [
             "HarnessDAL",
             .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
             .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
-            .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
             .product(name: "NIOPosix", package: "swift-nio"),
             .product(name: "Logging", package: "swift-log"),
         ]
@@ -42,7 +41,6 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git", from: "1.8.0"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.62.0"),
         .package(url: "https://github.com/jpsim/Yams.git", from: "6.2.0"),
-        .package(url: "https://github.com/awslabs/swift-aws-lambda-runtime.git", from: "2.5.1"),
     ],
     targets: [
         .target(
