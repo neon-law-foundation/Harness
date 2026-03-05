@@ -256,7 +256,7 @@ struct MarkdownEditorTests {
         let tempPath = MarkdownEditor.tempPath(for: filePath)
 
         let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
-        #expect(tempPath == "\(homeDir)/.standards/temp/nevada.pages")
+        #expect(tempPath == "\(homeDir)/.harness/temp/nevada.pages")
     }
 
     @Test("Extracts filename from relative path")
@@ -265,6 +265,6 @@ struct MarkdownEditorTests {
         let tempPath = MarkdownEditor.tempPath(for: filePath)
 
         let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
-        #expect(tempPath == "\(homeDir)/.standards/temp/nevada.pages")
+        #expect(tempPath == "\(homeDir)/.harness/temp/nevada.pages")
     }
 }
