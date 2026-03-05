@@ -1,5 +1,5 @@
 {
-  "originHash" : "4bf7fd36665cdf4724a7afe949be8a36547dacb84179d3dcf519f0829055d56d",
+  "originHash" : "47f61f1d41c74b6d1b89d7d528d91fe01f7fb9ca3c213d4c150bc280dbf6aec8",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -47,15 +47,6 @@
       }
     },
     {
-      "identity" : "fluent-postgres-driver",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/vapor/fluent-postgres-driver.git",
-      "state" : {
-        "revision" : "59bff45a41d1ece1950bb8a6e0006d88c1fb6e69",
-        "version" : "2.12.0"
-      }
-    },
-    {
       "identity" : "fluent-sqlite-driver",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/fluent-sqlite-driver.git",
@@ -71,33 +62,6 @@
       "state" : {
         "revision" : "3498e60218e6003894ff95192d756e238c01f44e",
         "version" : "4.7.1"
-      }
-    },
-    {
-      "identity" : "openapikit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mattpolzin/OpenAPIKit",
-      "state" : {
-        "revision" : "343b2c1793058fcc53c1bd7e2907f8e3a4d640fb",
-        "version" : "3.9.0"
-      }
-    },
-    {
-      "identity" : "postgres-kit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/vapor/postgres-kit.git",
-      "state" : {
-        "revision" : "d2fd3172c2e318bd292a4c1297e4c65a418cf6f3",
-        "version" : "2.14.1"
-      }
-    },
-    {
-      "identity" : "postgres-nio",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/vapor/postgres-nio",
-      "state" : {
-        "revision" : "8ee6118c03501196be183b0938d2ec4478c18954",
-        "version" : "1.27.0"
       }
     },
     {
@@ -146,21 +110,12 @@
       }
     },
     {
-      "identity" : "swift-argument-parser",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-argument-parser",
-      "state" : {
-        "revision" : "c5d11a805e765f52ba34ec7284bd4fcd6ba68615",
-        "version" : "1.7.0"
-      }
-    },
-    {
       "identity" : "swift-asn1",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-asn1.git",
       "state" : {
-        "revision" : "f70225981241859eb4aa1a18a75531d26637c8cc",
-        "version" : "1.4.0"
+        "revision" : "810496cf121e525d660cd0ea89a758740476b85f",
+        "version" : "1.5.1"
       }
     },
     {
@@ -179,24 +134,6 @@
       "state" : {
         "revision" : "b601256eab081c0f92f059e12818ac1d4f178ff7",
         "version" : "1.3.0"
-      }
-    },
-    {
-      "identity" : "swift-aws-lambda-events",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/awslabs/swift-aws-lambda-events.git",
-      "state" : {
-        "revision" : "a85c7a784692097c8eee441571cb5adae5d5b0cf",
-        "version" : "1.2.3"
-      }
-    },
-    {
-      "identity" : "swift-aws-lambda-runtime",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/awslabs/swift-aws-lambda-runtime.git",
-      "state" : {
-        "revision" : "634c36e5d3f8fb113153fccf817492baa411ff50",
-        "version" : "2.5.1"
       }
     },
     {
@@ -247,10 +184,10 @@
     {
       "identity" : "swift-http-types",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-http-types.git",
+      "location" : "https://github.com/apple/swift-http-types",
       "state" : {
-        "revision" : "a0a57e949a8903563aba4615869310c0ebf14c03",
-        "version" : "1.4.0"
+        "revision" : "45eb0224913ea070ec4fba17291b9e7ecf4749ca",
+        "version" : "1.5.1"
       }
     },
     {
@@ -267,8 +204,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-metrics.git",
       "state" : {
-        "revision" : "0743a9364382629da3bf5677b46a2c4b1ce5d2a6",
-        "version" : "2.7.1"
+        "revision" : "f17c111cec972c2a4922cef38cf64f76f7e87886",
+        "version" : "2.8.0"
       }
     },
     {
@@ -303,8 +240,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-nio-ssl.git",
       "state" : {
-        "revision" : "b2b043a8810ab6d51b3ff4df17f057d87ef1ec7c",
-        "version" : "2.34.1"
+        "revision" : "173cc69a058623525a58ae6710e2f5727c663793",
+        "version" : "2.36.0"
       }
     },
     {
@@ -312,8 +249,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-nio-transport-services.git",
       "state" : {
-        "revision" : "e645014baea2ec1c2db564410c51a656cf47c923",
-        "version" : "1.25.1"
+        "revision" : "60c3e187154421171721c1a38e800b390680fb5d",
+        "version" : "1.26.0"
       }
     },
     {
@@ -323,42 +260,6 @@
       "state" : {
         "revision" : "0c0290ff6b24942dadb83a929ffaaa1481df04a2",
         "version" : "1.1.1"
-      }
-    },
-    {
-      "identity" : "swift-openapi-generator",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-openapi-generator.git",
-      "state" : {
-        "revision" : "d74223cc5595a8165181c4d9579243c932e5cd07",
-        "version" : "1.10.3"
-      }
-    },
-    {
-      "identity" : "swift-openapi-lambda",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/awslabs/swift-openapi-lambda.git",
-      "state" : {
-        "revision" : "97b2e6d017b9d7404b144ab59bd92b0fc6316a2e",
-        "version" : "2.1.0"
-      }
-    },
-    {
-      "identity" : "swift-openapi-runtime",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-openapi-runtime.git",
-      "state" : {
-        "revision" : "7cdf33371bf89b23b9cf4fd3ce8d3c825c28fbe8",
-        "version" : "1.9.0"
-      }
-    },
-    {
-      "identity" : "swift-openapi-vapor",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swift-server/swift-openapi-vapor.git",
-      "state" : {
-        "revision" : "b53c1517e889d5479567729fbe143a59da302ffc",
-        "version" : "1.0.1"
       }
     },
     {
