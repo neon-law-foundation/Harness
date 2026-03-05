@@ -5,7 +5,7 @@ let arguments = CommandLine.arguments
 func printUsage() {
     print(
         """
-        Usage: standards <command> [arguments]
+        Usage: harness <command> [arguments]
 
         Commands:
           lint <directory>    Validate Markdown files have lines ≤120 characters
@@ -29,15 +29,15 @@ func printUsage() {
           --version, -v       Show version information
 
         Examples:
-          standards lint .
-          standards import ./notations
-          standards pdf nevada.md
-          standards edit nevada.md
-          standards save nevada.md
-          standards format nevada.md
-          standards ddl
-          standards list questions
-          standards list jurisdictions
+          harness lint .
+          harness import ./notations
+          harness pdf nevada.md
+          harness edit nevada.md
+          harness save nevada.md
+          harness format nevada.md
+          harness ddl
+          harness list questions
+          harness list jurisdictions
         """
     )
 }
@@ -66,7 +66,7 @@ Task {
         case "pdf":
             guard arguments.count > 2 else {
                 print("Error: Missing file argument for pdf command")
-                print("Usage: standards pdf <file>")
+                print("Usage: harness pdf <file>")
                 exit(1)
             }
             let filePath = arguments[2]
@@ -76,7 +76,7 @@ Task {
         case "edit":
             guard arguments.count > 2 else {
                 print("Error: Missing file argument for edit command")
-                print("Usage: standards edit <file>")
+                print("Usage: harness edit <file>")
                 exit(1)
             }
             let filePath = arguments[2]
@@ -85,7 +85,7 @@ Task {
         case "save":
             guard arguments.count > 2 else {
                 print("Error: Missing file argument for save command")
-                print("Usage: standards save <file>")
+                print("Usage: harness save <file>")
                 exit(1)
             }
             let filePath = arguments[2]
@@ -95,7 +95,7 @@ Task {
         case "format":
             guard arguments.count > 2 else {
                 print("Error: Missing file argument for format command")
-                print("Usage: standards format <file>")
+                print("Usage: harness format <file>")
                 exit(1)
             }
             let filePath = arguments[2]
@@ -114,7 +114,7 @@ Task {
                 command = JurisdictionsListCommand()
             default:
                 print("Error: Unknown list subcommand: '\(subCommand)'")
-                print("Usage: standards list <questions|jurisdictions>")
+                print("Usage: harness list <questions|jurisdictions>")
                 exit(1)
             }
         #endif

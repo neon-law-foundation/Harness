@@ -91,19 +91,19 @@ enum MarkdownEditor {
 
     /// Generates the temp file path for a given file
     /// - Parameter filePath: Original file path
-    /// - Returns: Path in ~/.standards/temp/ directory with .pages extension
+    /// - Returns: Path in ~/.harness/temp/ directory with .pages extension
     static func tempPath(for filePath: String) -> String {
         let url = URL(fileURLWithPath: filePath)
         let filenameWithoutExtension = url.deletingPathExtension().lastPathComponent
         let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
-        return "\(homeDir)/.standards/temp/\(filenameWithoutExtension).pages"
+        return "\(homeDir)/.harness/temp/\(filenameWithoutExtension).pages"
     }
 
     /// Ensures the temp directory exists
     /// - Returns: The path to the temp directory
     static func ensureTempDirectory() throws -> String {
         let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
-        let tempDir = "\(homeDir)/.standards/temp"
+        let tempDir = "\(homeDir)/.harness/temp"
 
         if !FileManager.default.fileExists(atPath: tempDir) {
             try FileManager.default.createDirectory(

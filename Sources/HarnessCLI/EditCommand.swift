@@ -15,7 +15,7 @@ struct EditCommand: Command {
         print("✓ Opened in Pages")
         print("")
         print("  Edit the file and save it (⌘S)")
-        print("  Then run: standards save \(filePath)")
+        print("  Then run: harness save \(filePath)")
         #endif
     }
 

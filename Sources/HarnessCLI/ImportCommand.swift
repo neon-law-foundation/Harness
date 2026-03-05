@@ -8,7 +8,7 @@ struct ImportCommand: Command {
     let directoryPath: String
 
     func run() async throws {
-        let logger = Logger(label: "standards-cli")
+        let logger = Logger(label: "harness-cli")
         let url: URL
 
         if directoryPath == "." {

@@ -53,7 +53,7 @@ struct PDFCommand: Command {
             print("")
 
             print("Please fix these violations before generating PDF.")
-            print("Run 'standards lint \(fileURL.path)' for more details.")
+            print("Run 'harness lint \(fileURL.path)' for more details.")
             throw CommandError.validationFailed
         }
 

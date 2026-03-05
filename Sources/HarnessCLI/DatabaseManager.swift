@@ -11,7 +11,7 @@ public actor DatabaseManager {
     private let logger: Logger
 
     public init(seed: Bool = false) async throws {
-        var silentLogger = Logger(label: "standards-cli")
+        var silentLogger = Logger(label: "harness-cli")
         silentLogger.logLevel = .error
         self.logger = silentLogger
 
