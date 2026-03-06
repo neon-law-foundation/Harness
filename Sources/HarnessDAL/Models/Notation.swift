@@ -98,6 +98,19 @@ public final class Notation: Model, @unchecked Sendable {
     @OptionalParent(key: "owner_id")
     public var owner: Entity?
 
+    /// The flow state machine for this notation, stored as a raw YAML state map.
+    ///
+    /// Keys are state names (e.g. `"BEGIN"`, `"name"`, `"END"`); values are transition maps
+    /// from condition strings to destination state names.
+    @Field(key: "flow")
+    public var flow: [String: [String: String]]
+
+    /// The alignment state machine for this notation, stored as a raw YAML state map.
+    ///
+    /// Same format as ``flow``. Defaults to an empty map when no alignment flow is defined.
+    @Field(key: "alignment")
+    public var alignment: [String: [String: String]]
+
     /// The timestamp when this notation was created.
     @Timestamp(key: "inserted_at", on: .create)
     public var insertedAt: Date?
@@ -107,7 +120,10 @@ public final class Notation: Model, @unchecked Sendable {
     public var updatedAt: Date?
 
     /// Creates a new notation instance.
-    public init() {}
+    public init() {
+        self.flow = [:]
+        self.alignment = [:]
+    }
 
     /// Sets the owner to Neon Law Foundation.
     ///

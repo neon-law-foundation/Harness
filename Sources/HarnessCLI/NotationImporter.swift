@@ -51,6 +51,10 @@ public struct NotationImporter {
             throw NotationError.missingRequiredField("respondent_type")
         }
 
+        let yaml = try parser.parseYAML(content, as: NotationYAML.self)
+        let flow = yaml?.flow ?? [:]
+        let alignment = yaml?.alignment ?? [:]
+
         let code = fileURL.deletingPathExtension().lastPathComponent
 
         logger.debug("Creating notation with code: \(code), title: \(title)")
@@ -64,6 +68,8 @@ public struct NotationImporter {
             respondentType: respondentType,
             markdownContent: markdownContent,
             frontmatter: frontmatter,
+            flow: flow,
+            alignment: alignment,
             ownerID: nil
         )
 
@@ -71,5 +77,9 @@ public struct NotationImporter {
 
         return notation
     }
+}
+private struct NotationYAML: Decodable {
+    let flow: [String: [String: String]]?
+    let alignment: [String: [String: String]]?
 }
 #endif

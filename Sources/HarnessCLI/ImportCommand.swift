@@ -47,51 +47,45 @@ struct ImportCommand: Command {
         print("")
         print("📋 Validating markdown files in: \(url.path)")
 
-        let rules: [Rule] = [
+        let dbManager = try await DatabaseManager()
+        let database = dbManager.getDatabase()
+
+        let questionRepository = QuestionRepository(database: database)
+        let allQuestions = try await questionRepository.findAll()
+        let validCodes = Set(allQuestions.map(\.code))
+
+        let importRules: [Rule] = [
             F101_TitleRequired(),
             F102_RespondentTypeRequired(),
+            F104_FlowQuestionCodes(validCodes: validCodes),
         ]
-        let engine = RuleEngine(rules: rules)
-        let lintResult = try engine.lint(directory: url)
+        let importEngine = RuleEngine(rules: importRules)
+        let importLintResult = try importEngine.lint(directory: url)
 
-        if !lintResult.isValid {
+        if !importLintResult.isValid {
             print(
-                "❌ Found \(lintResult.totalViolationCount) violation(s) in \(lintResult.fileViolations.count) file(s):\n"
+                "❌ Found \(importLintResult.totalViolationCount) violation(s) in \(importLintResult.fileViolations.count) file(s):\n"
             )
-
-            for fileViolation in lintResult.fileViolations {
+            for fileViolation in importLintResult.fileViolations {
                 let relativePath = makeRelativePath(fileViolation.file, from: url)
                 print("\(relativePath):")
-
                 for violation in fileViolation.violations {
                     var parts = ["[\(violation.ruleCode)]"]
-
-                    if let line = violation.line {
-                        parts.append("Line \(line):")
-                    }
-
+                    if let line = violation.line { parts.append("Line \(line):") }
                     parts.append(violation.message)
-
                     if let context = violation.context, !context.isEmpty {
-                        let contextStr = context.map { "\($0.key): \($0.value)" }.joined(
-                            separator: ", "
+                        parts.append(
+                            "(" + context.map { "\($0.key): \($0.value)" }.joined(separator: ", ") + ")"
                         )
-                        parts.append("(\(contextStr))")
                     }
-
                     print("  " + parts.joined(separator: " "))
                 }
                 print("")
             }
-
-            print("❌ Validation failed. Please fix violations before importing.")
+            try await dbManager.shutdown()
             throw CommandError.lintFailed
         }
 
-        print("✅ All files valid. Starting import to database...\n")
-
-        let dbManager = try await DatabaseManager()
-        let database = dbManager.getDatabase()
         let notationService = NotationService(database: database)
         let importer = NotationImporter(notationService: notationService, logger: logger)
 
