@@ -14,7 +14,7 @@ public final class Question: Model, @unchecked Sendable {
     @Field(key: "prompt")
     public var prompt: String
 
-    @Field(key: "question_type")
+    @Enum(key: "question_type")
     public var questionType: QuestionType
 
     @Field(key: "code")
