@@ -21,6 +21,9 @@ public enum NotationError: Error, LocalizedError {
     /// Required field is missing from notation data.
     case missingRequiredField(String)
 
+    /// A notation with the same title already exists in this repository.
+    case titleAlreadyExists(String)
+
     public var errorDescription: String? {
         switch self {
         case .versionAlreadyExists(let repo, let code, let version):
@@ -44,6 +47,8 @@ public enum NotationError: Error, LocalizedError {
             return "Invalid frontmatter: \(message)"
         case .missingRequiredField(let field):
             return "Missing required field: \(field)"
+        case .titleAlreadyExists(let title):
+            return "Notation with title '\(title)' already exists in this repository"
         }
     }
 

@@ -1,4 +1,5 @@
 import Foundation
+import Yams
 
 /// Utility for parsing YAML frontmatter from markdown files
 public struct FrontmatterParser {
@@ -77,5 +78,32 @@ public struct FrontmatterParser {
             return nil
         }
         return frontmatter[key]
+    }
+
+    /// Decode the frontmatter block into a `Decodable` type using Yams.
+    ///
+    /// Use this when the frontmatter contains nested structures (e.g. `flow`, `alignment`)
+    /// that the flat `parse(_:)` method cannot capture.
+    ///
+    /// - Parameters:
+    ///   - content: The full file content including frontmatter delimiters.
+    ///   - type: The `Decodable` type to decode into.
+    /// - Returns: The decoded value, or `nil` if no frontmatter is present.
+    /// - Throws: A `YamlError` or `DecodingError` if the frontmatter is malformed.
+    public func parseYAML<T: Decodable>(_ content: String, as type: T.Type) throws -> T? {
+        let lines = content.components(separatedBy: .newlines)
+        guard lines.first == "---" else { return nil }
+
+        var endIndex: Int?
+        for (index, line) in lines.enumerated() where index > 0 {
+            if line == "---" {
+                endIndex = index
+                break
+            }
+        }
+
+        guard let end = endIndex else { return nil }
+        let yaml = lines[1..<end].joined(separator: "\n")
+        return try YAMLDecoder().decode(T.self, from: yaml)
     }
 }

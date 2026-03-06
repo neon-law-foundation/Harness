@@ -92,18 +92,11 @@ erDiagram
         timestamp updated_at
     }
 
-    MAILBOX_OFFICE {
-        int32 id PK
-        int32 entity_id FK "unique"
-        boolean is_active
-        timestamp inserted_at
-        timestamp updated_at
-    }
-
     MAILBOX {
         int32 id PK
-        int32 mailbox_office_id FK
+        int32 entity_id FK
         int32 address_id FK
+        enum location "reno"
         timestamp inserted_at
         timestamp updated_at
     }
@@ -146,15 +139,32 @@ erDiagram
         timestamp updated_at
     }
 
+    %% Git Repositories
+    GIT_REPOSITORY {
+        int32 id PK
+        string aws_account_id
+        string aws_region
+        string codecommit_repository_id UK "unique"
+        string repository_name
+        string repository_arn
+        string description
+        timestamp inserted_at
+        timestamp updated_at
+    }
+
     %% Notations and Assignments
     NOTATION {
         int32 id PK
-        string title
+        string title "unique per git_repository_id"
+        string code
         string description
         enum respondent_type "person | entity | person_and_entity"
         string markdown_content
         json frontmatter "JSONB metadata"
+        json flow "state machine YAML map"
+        json alignment "alignment state machine YAML map"
         string version "git commit SHA"
+        int32 git_repository_id FK
         int32 owner_id FK "typically Neon Law Foundation"
         timestamp inserted_at
         timestamp updated_at
@@ -210,8 +220,7 @@ erDiagram
 
     ENTITY_TYPE ||--|| JURISDICTION : "in"
 
-    ENTITY ||--o| MAILBOX_OFFICE : "operates"
-    MAILBOX_OFFICE ||--o{ MAILBOX : "has"
+    ENTITY ||--o{ MAILBOX : "operates"
     ADDRESS ||--o{ MAILBOX : "receives at"
 
     CREDENTIAL ||--|| PERSON : "belongs to"
@@ -227,6 +236,7 @@ erDiagram
 
     NOTATION ||--o| ENTITY : "owned by"
     NOTATION ||--o{ ASSIGNED_NOTATION : "assigned as"
+    NOTATION ||--o| GIT_REPOSITORY : "sourced from"
 
     ASSIGNED_NOTATION ||--|| NOTATION : "instance of"
     ASSIGNED_NOTATION ||--o| PERSON : "assigned to"
@@ -374,6 +384,10 @@ combination.
 - `waiting_for_alignment` - Waiting for entity/person alignment
 - `closed` - Completed and finalized
 
+### MailboxLocation
+
+- `reno` - Reno, NV office
+
 ### BlobReferencedBy
 
 - `letters` - Referenced by letters table
@@ -409,6 +423,8 @@ All entities include:
 The following entities use JSONB for flexible structured data:
 
 - `NOTATION.frontmatter` - Markdown frontmatter metadata
+- `NOTATION.flow` - Flow state machine (raw YAML map: state → transitions)
+- `NOTATION.alignment` - Alignment state machine (same format as flow)
 - `QUESTION.choices` - Radio/select option choices
 - `RELATIONSHIP_LOG.relationships` - Key-value relationship data
 
@@ -417,9 +433,10 @@ The following entities use JSONB for flexible structured data:
 - `PERSON.email` - Unique email addresses
 - `PROJECT.codename` - Unique project identifiers
 - `QUESTION.code` - Unique question codes
-- `MAILBOX_OFFICE` - Unique (entity_id)
-- `MAILBOX` - Unique (mailbox_office_id, address_id)
+- `GIT_REPOSITORY.codecommit_repository_id` - Unique repository identifier
+- `MAILBOX` - Unique (entity_id, address_id)
 - `SHARE_CLASS` - Unique (entity_id, priority)
+- `NOTATION` - Unique (title, git_repository_id)
 - `ASSIGNED_NOTATION` - Unique open assignments per notation-respondent
 
 ## Cross-References
@@ -435,6 +452,6 @@ For detailed information on specific entities:
 
 This ERD represents the database schema as of the latest migration:
 
-- Migration: `202602280002_UpdateMailboxes`
-- Total Migrations: 22
-- Last Updated: 2026-02-28
+- Migration: `202603050003_AddUniqueTitlePerRepository`
+- Total Migrations: 25
+- Last Updated: 2026-03-05

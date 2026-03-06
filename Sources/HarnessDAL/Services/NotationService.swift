@@ -71,6 +71,8 @@ public actor NotationService {
         respondentType: RespondentType,
         markdownContent: String,
         frontmatter: [String: String],
+        flow: [String: [String: String]] = [:],
+        alignment: [String: [String: String]] = [:],
         ownerID: Int32?
     ) async throws -> Notation {
         let allVersions = try await Notation.query(on: database)
@@ -86,6 +88,15 @@ public actor NotationService {
             )
         }
 
+        let existingWithTitle = try await Notation.query(on: database)
+            .filter(\.$gitRepository.$id == gitRepositoryID)
+            .filter(\.$title == title)
+            .first()
+
+        if existingWithTitle != nil {
+            throw NotationError.titleAlreadyExists(title)
+        }
+
         let notation = Notation()
         notation.$gitRepository.id = gitRepositoryID
         notation.code = code
@@ -95,6 +106,8 @@ public actor NotationService {
         notation.respondentType = respondentType
         notation.markdownContent = markdownContent
         notation.frontmatter = frontmatter
+        notation.flow = flow
+        notation.alignment = alignment
         notation.$owner.id = ownerID
 
         try await notation.save(on: database)
@@ -126,6 +139,8 @@ public actor NotationService {
         respondentType: RespondentType,
         markdownContent: String,
         frontmatter: [String: String],
+        flow: [String: [String: String]] = [:],
+        alignment: [String: [String: String]] = [:],
         ownerID: Int32?
     ) async throws -> Notation {
         let validations = validator.validate(
@@ -149,6 +164,8 @@ public actor NotationService {
             respondentType: respondentType,
             markdownContent: markdownContent,
             frontmatter: frontmatter,
+            flow: flow,
+            alignment: alignment,
             ownerID: ownerID
         )
     }
