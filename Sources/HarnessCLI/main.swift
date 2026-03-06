@@ -21,8 +21,8 @@ func printUsage() {
           format <file>       Format a Markdown file
                               Converts '-' bullet lists to '*', wraps at 120 chars, trims whitespace
           ddl                 Print CREATE TABLE statements for all schema tables
-          list questions      List all seeded questions with their prompts (macOS only)
-          list jurisdictions  List all seeded jurisdictions with their types (macOS only)
+          list questions      List all seeded questions with their prompts
+          list jurisdictions  List all seeded jurisdictions with their types
 
         Options:
           --help, -h          Show this help message
@@ -104,7 +104,6 @@ Task {
         case "ddl":
             command = DDLCommand()
 
-        #if os(macOS)
         case "list":
             let subCommand = arguments.count > 2 ? arguments[2] : ""
             switch subCommand {
@@ -117,7 +116,6 @@ Task {
                 print("Usage: harness list <questions|jurisdictions>")
                 exit(1)
             }
-        #endif
 
         case "--help", "-h":
             printUsage()
