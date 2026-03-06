@@ -34,6 +34,7 @@ public struct HarnessDALConfiguration {
             CreateGitRepositories(),
             AddGitRepositoryToNotations(),
             SimplifyMailboxes(),
+            ConvertQuestionTypeToEnum(),
         ]
     }
 

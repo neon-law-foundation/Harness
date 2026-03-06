@@ -44,6 +44,7 @@ let package = Package(
                 "ERD-1.png",
                 "ERD.md",
                 "export-erd.sh",
+                "ROADMAP-question-type-enum.md",
             ],
             resources: [
                 .copy("Examples"),
