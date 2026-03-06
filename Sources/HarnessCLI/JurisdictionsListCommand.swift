@@ -1,4 +1,3 @@
-#if os(macOS)
 import HarnessDAL
 
 struct JurisdictionsListCommand: Command {
@@ -46,4 +45,3 @@ struct JurisdictionsListCommand: Command {
         }
     }
 }
-#endif

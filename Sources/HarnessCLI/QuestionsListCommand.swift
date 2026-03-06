@@ -1,4 +1,3 @@
-#if os(macOS)
 import HarnessDAL
 
 struct QuestionsListCommand: Command {
@@ -30,4 +29,3 @@ struct QuestionsListCommand: Command {
         }
     }
 }
-#endif
