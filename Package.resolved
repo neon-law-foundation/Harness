@@ -1,5 +1,5 @@
 {
-  "originHash" : "414a74527b2e9cff0d968de7e3a2041c6eb998fc3c4c6391b793d562495461fd",
+  "originHash" : "04567e9af95f32933dd69ad4fb23a599786dbce73bd83dd3312be04bf2a3ab1f",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -80,15 +80,6 @@
       "state" : {
         "revision" : "e98b27919198f7578e8e349f701655b13635fb7c",
         "version" : "2.18.3"
-      }
-    },
-    {
-      "identity" : "hummingbird-lambda",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hummingbird-project/hummingbird-lambda.git",
-      "state" : {
-        "revision" : "2a4974805627c7816e1ee77525c7227b655399f4",
-        "version" : "2.0.2"
       }
     },
     {
@@ -200,24 +191,6 @@
       }
     },
     {
-      "identity" : "swift-aws-lambda-events",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/awslabs/swift-aws-lambda-events.git",
-      "state" : {
-        "revision" : "d18360e63624019bddf418de28d83007acd60956",
-        "version" : "1.5.0"
-      }
-    },
-    {
-      "identity" : "swift-aws-lambda-runtime",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/awslabs/swift-aws-lambda-runtime.git",
-      "state" : {
-        "revision" : "4815273dc3f45bb199d4c2003032bcf4840caa3f",
-        "version" : "2.5.3"
-      }
-    },
-    {
       "identity" : "swift-certificates",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-certificates.git",
@@ -260,15 +233,6 @@
       "state" : {
         "revision" : "baa932c1336f7894145cbaafcd34ce2dd0b77c97",
         "version" : "1.3.1"
-      }
-    },
-    {
-      "identity" : "swift-extras-base64",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swift-extras/swift-extras-base64.git",
-      "state" : {
-        "revision" : "dc8121fdd2b444c97d6b0534e8ad4ddecbe0d5f4",
-        "version" : "1.0.0"
       }
     },
     {

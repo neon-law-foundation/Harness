@@ -1,6 +1,8 @@
+import AsyncHTTPClient
 import Foundation
 import Hummingbird
 import JWTKit
+import NIOFoundationCompat
 
 /// Hummingbird middleware that verifies a standard OIDC ID token on every request.
 ///
@@ -89,16 +91,26 @@ public func buildJWTKeyCollection(
         return injectedCollection ?? JWTKeyCollection()
     }
 
-    guard let discoveryURL = URL(string: "\(issuerURL)/.well-known/openid-configuration") else {
+    let httpClient = HTTPClient.shared
+    let discoveryURLString = "\(issuerURL)/.well-known/openid-configuration"
+    guard URL(string: discoveryURLString) != nil else {
         throw OIDCConfigError.invalidIssuerURL
     }
-    let (discoveryData, _) = try await URLSession.shared.data(from: discoveryURL)
+    let discoveryResponse = try await httpClient.get(url: discoveryURLString).get()
+    guard var discoveryBody = discoveryResponse.body else {
+        throw OIDCConfigError.invalidIssuerURL
+    }
+    let discoveryData = discoveryBody.readData(length: discoveryBody.readableBytes) ?? Data()
     let discovery = try JSONDecoder().decode(OIDCDiscoveryDocument.self, from: discoveryData)
 
-    guard let jwksURL = URL(string: discovery.jwksURI) else {
+    guard URL(string: discovery.jwksURI) != nil else {
         throw OIDCConfigError.invalidJWKSURL
     }
-    let (jwksData, _) = try await URLSession.shared.data(from: jwksURL)
+    let jwksResponse = try await httpClient.get(url: discovery.jwksURI).get()
+    guard var jwksBody = jwksResponse.body else {
+        throw OIDCConfigError.invalidJWKSURL
+    }
+    let jwksData = jwksBody.readData(length: jwksBody.readableBytes) ?? Data()
     let jwks = try JSONDecoder().decode(JWKS.self, from: jwksData)
 
     let keyCollection = JWTKeyCollection()

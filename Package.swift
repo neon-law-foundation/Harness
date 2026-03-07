@@ -27,8 +27,8 @@ let package = Package(
         .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
         .package(
-            url: "https://github.com/hummingbird-project/hummingbird-lambda.git",
-            from: "2.0.0"
+            url: "https://github.com/swift-server/async-http-client.git",
+            from: "1.0.0"
         ),
         .package(url: "https://github.com/sliemeobn/elementary.git", from: "0.3.0"),
         .package(url: "https://github.com/vapor/jwt-kit.git", from: "5.0.0"),
@@ -74,6 +74,7 @@ let package = Package(
             name: "HarnessOIDCMiddleware",
             dependencies: [
                 "HarnessDAL",
+                .product(name: "AsyncHTTPClient", package: "async-http-client"),
                 .product(name: "Hummingbird", package: "hummingbird"),
                 .product(name: "JWTKit", package: "jwt-kit"),
             ]
