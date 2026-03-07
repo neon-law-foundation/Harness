@@ -32,6 +32,10 @@ let package = Package(
         ),
         .package(url: "https://github.com/sliemeobn/elementary.git", from: "0.3.0"),
         .package(url: "https://github.com/vapor/jwt-kit.git", from: "5.0.0"),
+        .package(
+            url: "https://github.com/apple/swift-configuration.git",
+            .upToNextMinor(from: "1.1.0")
+        ),
     ],
     targets: [
         .target(
