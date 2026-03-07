@@ -26,6 +26,22 @@ public struct OIDCIDTokenPayload: JWTPayload {
     /// User's email address (standard OIDC profile claim).
     public var email: String?
 
+    public init(
+        iss: IssuerClaim,
+        sub: SubjectClaim,
+        aud: AudienceClaim,
+        exp: ExpirationClaim,
+        iat: IssuedAtClaim? = nil,
+        email: String? = nil
+    ) {
+        self.iss = iss
+        self.sub = sub
+        self.aud = aud
+        self.exp = exp
+        self.iat = iat
+        self.email = email
+    }
+
     public func verify(using algorithm: some JWTAlgorithm) async throws {
         try exp.verifyNotExpired()
     }
