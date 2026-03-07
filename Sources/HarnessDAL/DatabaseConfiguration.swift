@@ -37,6 +37,8 @@ public struct HarnessDALConfiguration {
             ConvertQuestionTypeToEnum(),
             AddFlowAlignmentToNotations(),
             AddUniqueTitlePerRepository(),
+            RenameFlowWorkflowColumns(),
+            RenameAssignedNotationStateValues(),
         ]
     }
 

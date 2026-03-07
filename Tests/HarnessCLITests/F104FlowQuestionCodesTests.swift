@@ -22,12 +22,12 @@ struct F104FlowQuestionCodesTests {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               BEGIN:
                 _: person__trustee
               person__trustee:
                 _: END
-            alignment:
+            workflow:
               BEGIN:
                 _: notarization__for_trustee
               notarization__for_trustee:
@@ -45,12 +45,12 @@ struct F104FlowQuestionCodesTests {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               BEGIN:
                 _: staff_review
               staff_review:
                 _: END
-            alignment:
+            workflow:
               BEGIN:
                 _: staff_review
               staff_review:
@@ -63,19 +63,19 @@ struct F104FlowQuestionCodesTests {
         #expect(violations.isEmpty)
     }
 
-    @Test("Both flow and alignment valid pass")
-    func testBothFlowAndAlignmentValid() throws {
+    @Test("Both questionnaire and workflow valid pass")
+    func testBothQuestionnaireAndWorkflowValid() throws {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               BEGIN:
                 _: personal_name
               personal_name:
                 _: staff_review
               staff_review:
                 _: END
-            alignment:
+            workflow:
               BEGIN:
                 _: notarization__for_client
               notarization__for_client:
@@ -106,12 +106,12 @@ struct F104FlowQuestionCodesTests {
 
     // MARK: - Structural failures
 
-    @Test("Missing flow key produces violation")
-    func testMissingFlowKey() throws {
+    @Test("Missing questionnaire key produces violation")
+    func testMissingQuestionnaireKey() throws {
         let content = """
             ---
             title: Test
-            alignment:
+            workflow:
               BEGIN:
                 _: staff_review
               staff_review:
@@ -122,15 +122,15 @@ struct F104FlowQuestionCodesTests {
         let rule = F104_FlowQuestionCodes(validCodes: validCodes)
         let violations = try rule.validate(file: file)
         #expect(violations.count == 1)
-        #expect(violations[0].message == "Missing required 'flow' key")
+        #expect(violations[0].message == "Missing required 'questionnaire' key")
     }
 
-    @Test("Missing alignment key produces violation")
-    func testMissingAlignmentKey() throws {
+    @Test("Missing workflow key produces violation")
+    func testMissingWorkflowKey() throws {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               BEGIN:
                 _: staff_review
               staff_review:
@@ -141,18 +141,18 @@ struct F104FlowQuestionCodesTests {
         let rule = F104_FlowQuestionCodes(validCodes: validCodes)
         let violations = try rule.validate(file: file)
         #expect(violations.count == 1)
-        #expect(violations[0].message == "Missing required 'alignment' key")
+        #expect(violations[0].message == "Missing required 'workflow' key")
     }
 
-    @Test("flow missing BEGIN produces violation")
-    func testFlowMissingBegin() throws {
+    @Test("questionnaire missing BEGIN produces violation")
+    func testQuestionnaireMissingBegin() throws {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               staff_review:
                 _: END
-            alignment:
+            workflow:
               BEGIN:
                 _: staff_review
               staff_review:
@@ -162,22 +162,22 @@ struct F104FlowQuestionCodesTests {
         let file = try makeFile(content: content)
         let rule = F104_FlowQuestionCodes(validCodes: validCodes)
         let violations = try rule.validate(file: file)
-        #expect(violations.contains { $0.message == "flow is missing required BEGIN state" })
+        #expect(violations.contains { $0.message == "questionnaire is missing required BEGIN state" })
     }
 
-    @Test("flow missing END produces violation")
-    func testFlowMissingEnd() throws {
+    @Test("questionnaire missing END produces violation")
+    func testQuestionnaireMissingEnd() throws {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               BEGIN:
                 _: staff_review
               staff_review:
                 _: personal_name
               personal_name:
                 _: staff_review
-            alignment:
+            workflow:
               BEGIN:
                 _: staff_review
               staff_review:
@@ -187,20 +187,20 @@ struct F104FlowQuestionCodesTests {
         let file = try makeFile(content: content)
         let rule = F104_FlowQuestionCodes(validCodes: validCodes)
         let violations = try rule.validate(file: file)
-        #expect(violations.contains { $0.message == "flow is missing required END state" })
+        #expect(violations.contains { $0.message == "questionnaire is missing required END state" })
     }
 
-    @Test("alignment missing BEGIN produces violation")
-    func testAlignmentMissingBegin() throws {
+    @Test("workflow missing BEGIN produces violation")
+    func testWorkflowMissingBegin() throws {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               BEGIN:
                 _: staff_review
               staff_review:
                 _: END
-            alignment:
+            workflow:
               staff_review:
                 _: END
             ---
@@ -208,20 +208,20 @@ struct F104FlowQuestionCodesTests {
         let file = try makeFile(content: content)
         let rule = F104_FlowQuestionCodes(validCodes: validCodes)
         let violations = try rule.validate(file: file)
-        #expect(violations.contains { $0.message == "alignment is missing required BEGIN state" })
+        #expect(violations.contains { $0.message == "workflow is missing required BEGIN state" })
     }
 
-    @Test("alignment missing END produces violation")
-    func testAlignmentMissingEnd() throws {
+    @Test("workflow missing END produces violation")
+    func testWorkflowMissingEnd() throws {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               BEGIN:
                 _: staff_review
               staff_review:
                 _: END
-            alignment:
+            workflow:
               BEGIN:
                 _: staff_review
               staff_review:
@@ -233,22 +233,22 @@ struct F104FlowQuestionCodesTests {
         let file = try makeFile(content: content)
         let rule = F104_FlowQuestionCodes(validCodes: validCodes)
         let violations = try rule.validate(file: file)
-        #expect(violations.contains { $0.message == "alignment is missing required END state" })
+        #expect(violations.contains { $0.message == "workflow is missing required END state" })
     }
 
     // MARK: - Invalid codes
 
-    @Test("Invalid code in flow produces violation")
-    func testInvalidCodeInFlow() throws {
+    @Test("Invalid code in questionnaire produces violation")
+    func testInvalidCodeInQuestionnaire() throws {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               BEGIN:
                 _: tax_advisor
               tax_advisor:
                 _: END
-            alignment:
+            workflow:
               BEGIN:
                 _: staff_review
               staff_review:
@@ -265,17 +265,17 @@ struct F104FlowQuestionCodesTests {
         )
     }
 
-    @Test("Invalid code in alignment produces violation")
-    func testInvalidCodeInAlignment() throws {
+    @Test("Invalid code in workflow produces violation")
+    func testInvalidCodeInWorkflow() throws {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               BEGIN:
                 _: staff_review
               staff_review:
                 _: END
-            alignment:
+            workflow:
               BEGIN:
                 _: bad_code
               bad_code:
@@ -297,14 +297,14 @@ struct F104FlowQuestionCodesTests {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               BEGIN:
                 _: tax_advisor
               tax_advisor:
                 _: bad_code
               bad_code:
                 _: END
-            alignment:
+            workflow:
               BEGIN:
                 _: staff_review
               staff_review:
@@ -323,12 +323,12 @@ struct F104FlowQuestionCodesTests {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               BEGIN:
                 _: tax_advisor__for_client
               tax_advisor__for_client:
                 _: END
-            alignment:
+            workflow:
               BEGIN:
                 _: staff_review
               staff_review:
@@ -351,14 +351,14 @@ struct F104FlowQuestionCodesTests {
         let content = """
             ---
             title: Test
-            flow:
+            questionnaire:
               BEGIN:
                 _: staff_review
               staff_review:
                 _: bad_code
               bad_code:
                 _: END
-            alignment:
+            workflow:
               BEGIN:
                 _: notarization
               notarization:

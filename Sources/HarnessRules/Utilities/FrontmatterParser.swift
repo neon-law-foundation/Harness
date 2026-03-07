@@ -82,7 +82,7 @@ public struct FrontmatterParser {
 
     /// Decode the frontmatter block into a `Decodable` type using Yams.
     ///
-    /// Use this when the frontmatter contains nested structures (e.g. `flow`, `alignment`)
+    /// Use this when the frontmatter contains nested structures (e.g. `questionnaire`, `workflow`)
     /// that the flat `parse(_:)` method cannot capture.
     ///
     /// - Parameters:

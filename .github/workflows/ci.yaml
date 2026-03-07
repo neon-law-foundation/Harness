@@ -21,7 +21,7 @@ jobs:
         # compile on Windows SDK 10.0.26100.0 due to winsock.h/winsock2.h
         # redefinition conflicts. All deployment targets (AWS Lambda, EC2) run
         # Linux, and local development is macOS only.
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-26]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
 

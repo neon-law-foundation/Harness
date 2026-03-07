@@ -2,12 +2,12 @@
 title: Nevada Trust
 respondent_type: entity
 code: nevada_trust
-flow:
+questionnaire:
   BEGIN:
     _: person__trustee
   person__trustee:
     _: END
-alignment:
+workflow:
   BEGIN:
     _: staff_review
   staff_review:
