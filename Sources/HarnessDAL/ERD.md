@@ -161,8 +161,8 @@ erDiagram
         enum respondent_type "person | entity | person_and_entity"
         string markdown_content
         json frontmatter "JSONB metadata"
-        json flow "state machine YAML map"
-        json alignment "alignment state machine YAML map"
+        json questionnaire "questionnaire state machine YAML map"
+        json workflow "workflow state machine YAML map"
         string version "git commit SHA"
         int32 git_repository_id FK
         int32 owner_id FK "typically Neon Law Foundation"
@@ -175,7 +175,7 @@ erDiagram
         int32 notation_id FK
         int32 person_id FK "conditional on respondent_type"
         int32 entity_id FK "conditional on respondent_type"
-        enum state "open | review | waiting_for_flow | waiting_for_alignment | closed"
+        enum state "open | review | waiting_for_questionnaire | waiting_for_workflow | closed"
         timestamp inserted_at
         timestamp updated_at
     }
@@ -276,9 +276,9 @@ The `ASSIGNED_NOTATION` entity implements a state machine with defined transitio
 ```text
 open → review → closed
   ↓       ↓
-  ↓   waiting_for_alignment → review/closed
+  ↓   waiting_for_workflow → review/closed
   ↓
-waiting_for_flow → open/closed
+waiting_for_questionnaire → open/closed
 ```
 
 See `ASSIGNED_NOTATION_STATE_MACHINE.md` for detailed state transition documentation.
@@ -380,8 +380,8 @@ combination.
 
 - `open` - Initial assignment state
 - `review` - Response submitted, awaiting review
-- `waiting_for_flow` - Blocked on dependent flow
-- `waiting_for_alignment` - Waiting for entity/person alignment
+- `waiting_for_questionnaire` - Blocked on dependent questionnaire
+- `waiting_for_workflow` - Waiting for workflow coordination
 - `closed` - Completed and finalized
 
 ### MailboxLocation
@@ -423,8 +423,8 @@ All entities include:
 The following entities use JSONB for flexible structured data:
 
 - `NOTATION.frontmatter` - Markdown frontmatter metadata
-- `NOTATION.flow` - Flow state machine (raw YAML map: state → transitions)
-- `NOTATION.alignment` - Alignment state machine (same format as flow)
+- `NOTATION.questionnaire` - Questionnaire state machine (raw YAML map: state → transitions)
+- `NOTATION.workflow` - Workflow state machine (same format as questionnaire)
 - `QUESTION.choices` - Radio/select option choices
 - `RELATIONSHIP_LOG.relationships` - Key-value relationship data
 

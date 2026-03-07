@@ -17,8 +17,8 @@ logic, and database locking strategies to ensure reliable workflow execution.
 
 - `open` - Initial state when notation is first assigned
 - `review` - Notation response is being reviewed
-- `waiting_for_flow` - Notation is blocked waiting for a dependent flow to complete
-- `waiting_for_alignment` - Notation is waiting for alignment with related entities/people
+- `waiting_for_questionnaire` - Notation is blocked waiting for a dependent flow to complete
+- `waiting_for_workflow` - Notation is waiting for workflow with related entities/people
 - `closed` - Notation is completed and finalized
 
 ## State Machine Diagram
@@ -28,20 +28,20 @@ stateDiagram-v2
     [*] --> open: Assign Notation
 
     open --> review: Submit Response
-    open --> waiting_for_flow: Flow Dependency Detected
-    open --> waiting_for_alignment: Alignment Required
+    open --> waiting_for_questionnaire: Flow Dependency Detected
+    open --> waiting_for_workflow: Alignment Required
     open --> closed: Auto-Complete (if applicable)
 
     review --> open: Request Changes
-    review --> waiting_for_alignment: Needs Alignment
+    review --> waiting_for_workflow: Needs Alignment
     review --> closed: Approve
 
-    waiting_for_flow --> open: Flow Completed
-    waiting_for_flow --> closed: Flow Completed & Auto-Approved
+    waiting_for_questionnaire --> open: Flow Completed
+    waiting_for_questionnaire --> closed: Flow Completed & Auto-Approved
 
-    waiting_for_alignment --> open: Alignment Completed
-    waiting_for_alignment --> review: Alignment Completed (needs review)
-    waiting_for_alignment --> closed: Alignment Completed & Auto-Approved
+    waiting_for_workflow --> open: Alignment Completed
+    waiting_for_workflow --> review: Alignment Completed (needs review)
+    waiting_for_workflow --> closed: Alignment Completed & Auto-Approved
 
     closed --> [*]
 ```
@@ -63,8 +63,8 @@ the notation.
 **Possible Transitions**:
 
 - → `review`: When respondent submits their response
-- → `waiting_for_flow`: When a dependency on another flow is detected
-- → `waiting_for_alignment`: When alignment with related entities/people is required
+- → `waiting_for_questionnaire`: When a dependency on another flow is detected
+- → `waiting_for_workflow`: When alignment with related entities/people is required
 - → `closed`: When auto-completion rules are met (e.g., simple acknowledgment)
 
 ```mermaid
@@ -105,7 +105,7 @@ authorized reviewer.
 **Possible Transitions**:
 
 - → `open`: When reviewer requests changes from the respondent
-- → `waiting_for_alignment`: When reviewer identifies alignment needs
+- → `waiting_for_workflow`: When reviewer identifies alignment needs
 - → `closed`: When reviewer approves the response
 
 ```mermaid
@@ -134,23 +134,23 @@ sequenceDiagram
     end
 ```
 
-### 3. Waiting for Flow State
+### 3. Waiting for Questionnaire State
 
-**Purpose**: The notation is blocked because it depends on another flow or
+**Purpose**: The notation is blocked because it depends on another questionnaire or
 process to complete first.
 
 **Entry Actions**:
 
-- Update state to `waiting_for_flow`
-- Record the blocking flow identifier(s)
-- Register callback/webhook for flow completion
+- Update state to `waiting_for_questionnaire`
+- Record the blocking questionnaire identifier(s)
+- Register callback/webhook for questionnaire completion
 - Send notification explaining the wait
 - Record dependency in audit log
 
 **Possible Transitions**:
 
-- → `open`: When the blocking flow completes and further action is needed
-- → `closed`: When the blocking flow completes and auto-approval rules are met
+- → `open`: When the blocking questionnaire completes and further action is needed
+- → `closed`: When the blocking questionnaire completes and auto-approval rules are met
 
 ```mermaid
 sequenceDiagram
@@ -159,8 +159,8 @@ sequenceDiagram
     participant FlowTracker
     participant DB
 
-    System->>AssignedNotation: Detect flow dependency
-    AssignedNotation->>DB: UPDATE state='waiting_for_flow'
+    System->>AssignedNotation: Detect questionnaire dependency
+    AssignedNotation->>DB: UPDATE state='waiting_for_questionnaire'
     AssignedNotation->>FlowTracker: Register dependency on Flow X
     FlowTracker-->>AssignedNotation: Callback registered
 
@@ -175,44 +175,44 @@ sequenceDiagram
     end
 ```
 
-### 4. Waiting for Alignment State
+### 4. Waiting for Workflow State
 
-**Purpose**: The notation requires alignment or coordination with other people
+**Purpose**: The notation requires workflow coordination with other people
 or entities before it can proceed.
 
 **Entry Actions**:
 
-- Update state to `waiting_for_alignment`
-- Record alignment requirements (who/what needs to align)
-- Send alignment requests to relevant parties
-- Set alignment deadline (if applicable)
-- Record alignment requirement in audit log
+- Update state to `waiting_for_workflow`
+- Record workflow requirements (who/what needs to align)
+- Send workflow requests to relevant parties
+- Set workflow deadline (if applicable)
+- Record workflow requirement in audit log
 
 **Possible Transitions**:
 
-- → `open`: When alignment is completed and respondent needs to update their response
-- → `review`: When alignment is completed and response needs review
-- → `closed`: When alignment is completed and auto-approval rules are met
+- → `open`: When workflow is completed and respondent needs to update their response
+- → `review`: When workflow is completed and response needs review
+- → `closed`: When workflow is completed and auto-approval rules are met
 
 ```mermaid
 sequenceDiagram
     participant Reviewer
     participant API
     participant DB
-    participant AlignmentTracker
+    participant WorkflowTracker
     participant Party1
     participant Party2
 
-    Reviewer->>API: Request alignment
-    API->>DB: UPDATE state='waiting_for_alignment'
-    API->>AlignmentTracker: Create alignment request
-    AlignmentTracker->>Party1: Request alignment input
-    AlignmentTracker->>Party2: Request alignment input
+    Reviewer->>API: Request workflow
+    API->>DB: UPDATE state='waiting_for_workflow'
+    API->>WorkflowTracker: Create workflow request
+    WorkflowTracker->>Party1: Request workflow input
+    WorkflowTracker->>Party2: Request workflow input
 
-    Party1->>AlignmentTracker: Submit alignment
-    Party2->>AlignmentTracker: Submit alignment
+    Party1->>WorkflowTracker: Submit workflow
+    Party2->>WorkflowTracker: Submit workflow
 
-    AlignmentTracker->>API: All parties aligned
+    WorkflowTracker->>API: All parties aligned
     alt Needs further response
         API->>DB: UPDATE state='open'
     else Needs review
@@ -441,10 +441,10 @@ graph TB
         "StateMachineArn": "arn:aws:states:REGION:ACCOUNT:stateMachine:AlignmentStateMachine",
         "Input": {
           "assignmentId.$": "$.assignment.id",
-          "alignmentRequirements.$": "$.action.alignmentRequirements"
+          "workflowRequirements.$": "$.action.workflowRequirements"
         }
       },
-      "ResultPath": "$.alignmentResult",
+      "ResultPath": "$.workquestionnaireResult",
       "Next": "HandleAlignmentResult"
     },
     "TransitionToWaitingForFlow": {
@@ -454,10 +454,10 @@ graph TB
         "StateMachineArn": "arn:aws:states:REGION:ACCOUNT:stateMachine:FlowDependencyStateMachine",
         "Input": {
           "assignmentId.$": "$.assignment.id",
-          "flowId.$": "$.action.flowId"
+          "questionnaireId.$": "$.action.questionnaireId"
         }
       },
-      "ResultPath": "$.flowResult",
+      "ResultPath": "$.questionnaireResult",
       "Next": "HandleFlowResult"
     },
     "HandleReviewResult": {
@@ -485,17 +485,17 @@ graph TB
       "Type": "Choice",
       "Choices": [
         {
-          "Variable": "$.alignmentResult.outcome",
+          "Variable": "$.workquestionnaireResult.outcome",
           "StringEquals": "ALIGNED_AUTO_APPROVE",
           "Next": "TransitionToClosed"
         },
         {
-          "Variable": "$.alignmentResult.outcome",
+          "Variable": "$.workquestionnaireResult.outcome",
           "StringEquals": "ALIGNED_NEEDS_REVIEW",
           "Next": "TransitionToReview"
         },
         {
-          "Variable": "$.alignmentResult.outcome",
+          "Variable": "$.workquestionnaireResult.outcome",
           "StringEquals": "ALIGNED_NEEDS_RESPONSE",
           "Next": "TransitionBackToOpen"
         }
@@ -506,12 +506,12 @@ graph TB
       "Type": "Choice",
       "Choices": [
         {
-          "Variable": "$.flowResult.outcome",
+          "Variable": "$.questionnaireResult.outcome",
           "StringEquals": "FLOW_COMPLETED_AUTO_APPROVE",
           "Next": "TransitionToClosed"
         },
         {
-          "Variable": "$.flowResult.outcome",
+          "Variable": "$.questionnaireResult.outcome",
           "StringEquals": "FLOW_COMPLETED_NEEDS_ACTION",
           "Next": "TransitionBackToOpen"
         }
@@ -666,10 +666,10 @@ CREATE UNIQUE INDEX assigned_notations_unique_review_assignment
 ON assigned_notations (notation_id, COALESCE(person_id, 0), COALESCE(entity_id, 0))
 WHERE state = 'review'
 
--- Only one assignment can be waiting for alignment at a time
+-- Only one assignment can be waiting for workflow at a time
 CREATE UNIQUE INDEX assigned_notations_unique_waiting_alignment
 ON assigned_notations (notation_id, COALESCE(person_id, 0), COALESCE(entity_id, 0))
-WHERE state = 'waiting_for_alignment'
+WHERE state = 'waiting_for_workflow'
 ```
 
 ## Retry Logic and Error Handling
@@ -827,8 +827,8 @@ graph TB
     subgraph "State Duration Metrics"
         A[Time in Open]
         B[Time in Review]
-        C[Time in Waiting for Flow]
-        D[Time in Waiting for Alignment]
+        C[Time in Waiting for Questionnaire]
+        D[Time in Waiting for Workflow]
         E[Total Time to Closure]
     end
 
@@ -882,8 +882,8 @@ graph TB
 - [ ] Set up monitoring dashboards
 - [ ] Implement dead letter queue processing
 - [ ] Add integration with notification service
-- [ ] Add integration with flow tracker
-- [ ] Add integration with alignment coordinator
+- [ ] Add integration with questionnaire tracker
+- [ ] Add integration with workflow coordinator
 
 ## Testing Strategy
 
@@ -957,7 +957,7 @@ struct AssignedNotationWorkflowTests {
         let assignment = try await createAssignment()
 
         try await requestAlignment(assignment)
-        #expect(assignment.state == .waitingForAlignment)
+        #expect(assignment.state == .waitingForWorkflow)
 
         try await completeAlignment(assignment)
         #expect(assignment.state == .review)
