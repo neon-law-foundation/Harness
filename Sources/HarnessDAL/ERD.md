@@ -1,11 +1,11 @@
-# StandardsDAL Entity Relationship Diagram
+# HarnessDAL Entity Relationship Diagram
 
 This document provides a comprehensive view of the database schema for the
-SagebrushStandards Data Access Layer.
+HarnessDAL.
 
 ## Database Schema Overview
 
-The StandardsDAL implements a relational database schema for managing legal
+HarnessDAL implements a relational database schema for managing legal
 entities, people, credentials, notations, and their relationships. The schema
 supports complex workflows including notation assignment tracking with state
 machines, professional credential management, and entity governance.
@@ -444,9 +444,9 @@ The following entities use JSONB for flexible structured data:
 For detailed information on specific entities:
 
 - State machine transitions: See `ASSIGNED_NOTATION_STATE_MACHINE.md`
-- Migration history: See `Sources/StandardsDAL/Migrations/`
-- Seed data: See `Sources/StandardsDAL/Seeds/`
-- Model implementations: See `Sources/StandardsDAL/Models/`
+- Migration history: See `Sources/HarnessDAL/Migrations/`
+- Seed data: See `Sources/HarnessDAL/Seeds/`
+- Model implementations: See `Sources/HarnessDAL/Models/`
 
 ## Schema Version
 

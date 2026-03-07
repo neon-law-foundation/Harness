@@ -1,15 +1,15 @@
 # Local Development Server
 
-This guide explains how to run the Standards API locally with Swagger UI for interactive testing.
+This guide explains how to run the Harness API locally with Swagger UI for interactive testing.
 
 ## Quick Start
 
 ```bash
 # Build and run the local development server
-swift run StandardsAPIServer
+swift run HarnessAPIServer
 
 # Or specify host and port
-swift run StandardsAPIServer serve --hostname 0.0.0.0 --port 8080
+swift run HarnessAPIServer serve --hostname 0.0.0.0 --port 8080
 ```
 
 The server will start on `http://localhost:8080` with:
@@ -43,7 +43,7 @@ The server automatically loads 97 seed records:
 
 ### 🗄️ Database
 
-Uses SQLite file-based database at `db/standards.sqlite` with all migrations applied.
+Uses SQLite file-based database at `db/harness.sqlite` with all migrations applied.
 
 ## API Endpoints
 
@@ -93,7 +93,7 @@ test('API homepage loads', async ({ page }) => {
   await page.goto('http://localhost:8080');
 
   // Verify Swagger UI loaded
-  await expect(page.locator('h1')).toContainText('Sagebrush Standards API');
+  await expect(page.locator('h1')).toContainText('Harness API');
 
   // Verify endpoints are visible
   await expect(page.locator('.opblock-tag')).toBeVisible();
@@ -120,28 +120,28 @@ docker-compose up -d
 export ENV=production
 export DATABASE_HOST=localhost
 export DATABASE_PORT=5432
-export DATABASE_USERNAME=standards
-export DATABASE_PASSWORD=standards
-export DATABASE_NAME=standards
+export DATABASE_USERNAME=harness
+export DATABASE_PASSWORD=harness
+export DATABASE_NAME=harness
 
 # Run server
-swift run StandardsAPIServer
+swift run HarnessAPIServer
 ```
 
 ## Architecture
 
 ```txt
-StandardsAPIServer
+HarnessAPIServer
 ├── Vapor HTTP server (local development)
 ├── OpenAPI generator (type-safe request/response)
 ├── Swagger UI (interactive docs)
-├── StandardsDAL (database layer)
+├── HarnessDAL (database layer)
 └── Same API handlers as Lambda deployment
 ```
 
 ### Differences from Lambda
 
-| Feature    | StandardsAPIServer (Local) | StandardsAPI (Lambda)    |
+| Feature    | HarnessAPIServer (Local)   | HarnessAPI (Lambda)      |
 | ---------- | -------------------------- | ------------------------ |
 | Transport  | Vapor HTTP                 | AWS Lambda + API Gateway |
 | Database   | SQLite file                | Aurora PostgreSQL        |
@@ -158,20 +158,20 @@ between local development and production.
 
 ```bash
 # Kill any existing server
-pkill -f StandardsAPIServer
+pkill -f HarnessAPIServer
 
 # Or use a different port
-swift run StandardsAPIServer serve --port 3000
+swift run HarnessAPIServer serve --port 3000
 ```
 
 ### Database Locked
 
 ```bash
 # Remove the SQLite database
-rm db/standards.sqlite
+rm db/harness.sqlite
 
 # Restart the server (will recreate database)
-swift run StandardsAPIServer
+swift run HarnessAPIServer
 ```
 
 ### Swagger UI Not Loading
@@ -190,7 +190,7 @@ swift run StandardsAPIServer
 ## Related Files
 
 - `openapi.yaml` - API specification
-- `Sources/StandardsAPI/` - Lambda deployment version
-- `Sources/StandardsAPIServer/` - Local development version
-- `Sources/StandardsDAL/` - Shared database layer
+- `Sources/HarnessAPI/` - Lambda deployment version
+- `Sources/HarnessAPIServer/` - Local development version
+- `Sources/HarnessDAL/` - Shared database layer
 - `docker-compose.yml` - PostgreSQL setup

@@ -1,6 +1,6 @@
-# StandardsDAL
+# HarnessDAL
 
-Data Access Layer for Standards application with Fluent ORM support.
+Data Access Layer for the Harness application with Fluent ORM support.
 
 ## Features
 
@@ -28,24 +28,24 @@ variable, following the same pattern as NLF/Web:
 - `DATABASE_PORT` - PostgreSQL port (default: `5432`)
 - `DATABASE_USERNAME` - PostgreSQL username (default: `postgres`)
 - `DATABASE_PASSWORD` - PostgreSQL password (default: empty)
-- `DATABASE_NAME` - PostgreSQL database name (default: `standards`)
+- `DATABASE_NAME` - PostgreSQL database name (default: `harness`)
 
 #### SQLite Configuration (when ENV=development)
 
-- `DATABASE_PATH` - SQLite file path (default: `db/standards.sqlite`)
+- `DATABASE_PATH` - SQLite file path (default: `db/harness.sqlite`)
 
 ## Usage
 
 ### Basic Configuration
 
 ```swift
-import StandardsDAL
+import HarnessDAL
 import Vapor
 
 let app = try await Application.make(.detect())
 
 // Automatically configures based on ENV variable
-try await StandardsDALConfiguration.configure(app)
+try await HarnessDALConfiguration.configure(app)
 
 // Now use the database
 let personRepo = PersonRepository(database: app.db)
@@ -64,7 +64,7 @@ try await personRepo.create(model: person)
 let app = try await Application.make(.detect())
 
 // Will use PostgreSQL based on ENV=production
-try await StandardsDALConfiguration.configure(app)
+try await HarnessDALConfiguration.configure(app)
 ```
 
 ## Models

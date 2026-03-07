@@ -5,12 +5,12 @@ plans, and litigation briefs.
 
 ## Documentation Standards
 
-All Markdown files must follow the Standards specification:
+All Markdown files must follow the Harness specification:
 
-- Reference: <https://www.sagebrush.services/standards>
-- Specification: <https://www.sagebrush.services/standards/spec>
+- Reference: <https://neonlaw.org/harness>
+- Specification: <https://neonlaw.org/harness>
 
-**CRITICAL**: Always run `standards lint .` before committing. If violations are
+**CRITICAL**: Always run `harness lint .` before committing. If violations are
 found, follow the STDOUT instructions
 provided by the CLI to fix line length issues. Every line must be ≤120
 characters.
@@ -36,7 +36,7 @@ characters.
 - **Small changes** - Each edit should be reviewable and focused
 - **Version control** - Commit frequently with clear, descriptive messages
 - **Clean formatting** - Remove all trailing whitespace
-- **Markdown compliance** - All files must pass `standards lint .`
+- **Markdown compliance** - All files must pass `harness lint .`
 
 ## Version Control
 
@@ -63,7 +63,7 @@ Before creating any commit, the committer agent will:
 
 ## What You Must NEVER Do
 
-1. **Never** commit files that fail `standards lint .`
+1. **Never** commit files that fail `harness lint .`
 2. **Never** exceed 120 characters per line in Markdown files
 3. **Never** provide legal advice without appropriate disclaimers
 4. **Never** assume facts not in evidence

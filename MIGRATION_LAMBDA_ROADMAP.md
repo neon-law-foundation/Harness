@@ -1,4 +1,4 @@
-# Standards Migration Lambda Implementation Roadmap
+# Harness Migration Lambda Implementation Roadmap
 
 ## Overview
 
@@ -9,9 +9,9 @@ databases across three AWS accounts (staging, production, neonlaw).
 ## Architecture
 
 ```text
-GitHub (neon-law-foundation/SagebrushStandards)
+GitHub (neon-law-foundation/Harness)
     ↓ (GitHub Actions + OIDC)
-CodeCommit (Standards repository in each account)
+CodeCommit (Harness repository in each account)
     ↓ (CodeCommit trigger)
 CodeBuild (Builds ARM64 Lambda zip)
     ↓ (Uploads to S3)
@@ -26,16 +26,16 @@ Aurora PostgreSQL (Runs migrations & seeds)
 
 ### ✅ Phase 1: Foundation (COMPLETED)
 
-- [x] Copy seed YAML files from Luxe to Standards
+- [x] Copy seed YAML files from Luxe to Harness
 - [x] Add Yams and AWS Lambda Runtime dependencies to Package.swift
 - [x] Create MigrationRunner executable target
 - [x] Add Seeds directory as Package resource
 
 ### 🚧 Phase 2: Seeding Logic (IN PROGRESS)
 
-- [ ] Add complete seed loading logic to StandardsDAL/DatabaseConfiguration.swift
+- [ ] Add complete seed loading logic to HarnessDAL/DatabaseConfiguration.swift
   - Copy seed parsing from Luxe/Dali/DatabaseConfiguration.swift
-  - Adapt model-specific insert functions for Standards models
+  - Adapt model-specific insert functions for Harness models
   - Make `runSeeds` public and return count
   - Handle foreign key resolution for nested YAML references
 
@@ -84,14 +84,14 @@ ENV=production swift run AWS create-github-oidc \
   --account 889786867297 \
   --region us-west-2 \
   --stack-name GitHubOIDC \
-  --repository neon-law-foundation/SagebrushStandards
+  --repository neon-law-foundation/Harness
 
 # Create CodeCommit repositories
 ENV=production swift run AWS create-codecommit \
   --account 889786867297 \
   --region us-west-2 \
-  --stack-name Standards \
-  --repository-name Standards
+  --stack-name Harness \
+  --repository-name Harness
 
 # Repeat for production (978489150794) and neonlaw (102186460229)
 ```
@@ -159,7 +159,7 @@ ENV=production swift run AWS create-codebuild \
   --account ACCOUNT_ID \
   --region us-west-2 \
   --stack-name standards-codebuild \
-  --codecommit-repo Standards \
+  --codecommit-repo Harness \
   --s3-stack standards-lambda-artifacts \
   --lambda-stack standards-migration-lambda
 ```
@@ -194,7 +194,7 @@ jobs:
 
       - name: Push to CodeCommit Staging
         run: |
-          git remote add staging codecommit://Standards
+          git remote add staging codecommit://Harness
           git push staging main
 ```
 
@@ -227,7 +227,7 @@ jobs:
 
       - name: Push to CodeCommit Production
         run: |
-          git remote add production codecommit://Standards
+          git remote add production codecommit://Harness
           git push production ${{ github.ref_name }}
 
   deploy-neonlaw:
@@ -242,7 +242,7 @@ jobs:
 
       - name: Push to CodeCommit NeonLaw
         run: |
-          git remote add neonlaw codecommit://Standards
+          git remote add neonlaw codecommit://Harness
           git push neonlaw ${{ github.ref_name }}
 ```
 
@@ -264,7 +264,7 @@ jobs:
 
 ### 📋 Phase 8: Documentation
 
-- [ ] Update Standards README.md with:
+- [ ] Update Harness README.md with:
   - Lambda migration system overview
   - Local development with Docker PostgreSQL
   - Deployment process
