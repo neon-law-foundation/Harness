@@ -1,18 +1,18 @@
 # Configuration Management
 
-The Standards API uses Apple's [Swift Configuration](https://github.com/apple/swift-configuration) library
+The Harness API uses Apple's [Swift Configuration](https://github.com/apple/swift-configuration) library
 for unified configuration management across all deployment environments.
 
 ## Environment Detection
 
-Both `StandardsAPI` and `StandardsAPIServer` use the **ENV environment variable** to determine their runtime behavior:
+Both `HarnessAPI` and `HarnessAPIServer` use the **ENV environment variable** to determine their runtime behavior:
 
 ```bash
 # Development mode (Vapor HTTP server, SQLite database)
-ENV=development swift run StandardsAPIServer
+ENV=development swift run HarnessAPIServer
 
 # Production mode (AWS Lambda runtime, PostgreSQL database)
-ENV=production swift run StandardsAPI
+ENV=production swift run HarnessAPI
 ```
 
 ### How It Works
@@ -57,7 +57,7 @@ default:
 
 ### Shared Implementation
 
-Both executables share the same API implementation (`StandardsAPIImplementation`) which:
+Both executables share the same API implementation (`HarnessAPIImplementation`) which:
 
 - Implements all OpenAPI endpoints
 - Contains business logic
@@ -74,10 +74,10 @@ Each runtime has a thin adapter layer:
 
 ```txt
 Sources/
-  StandardsAPI/
+  HarnessAPI/
     main.swift                      # Unified entry point with ENV detection
-    StandardsAPIImplementation.swift # Shared API implementation
-  StandardsAPIServer/
+    HarnessAPIImplementation.swift  # Shared API implementation
+  HarnessAPIServer/
     main.swift                      # Vapor server with ENV logging
 ```
 
@@ -87,10 +87,10 @@ Run the Vapor server locally:
 
 ```bash
 # Explicit environment variable
-ENV=development swift run StandardsAPIServer
+ENV=development swift run HarnessAPIServer
 
 # Or rely on default
-swift run StandardsAPIServer
+swift run HarnessAPIServer
 ```
 
 The server will:
@@ -106,7 +106,7 @@ Deploy to AWS Lambda:
 
 ```bash
 # Build for Lambda
-swift build -c release --product StandardsAPI
+swift build -c release --product HarnessAPI
 
 # Package for Lambda
 ./scripts/package-lambda.sh

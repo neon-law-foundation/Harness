@@ -1,7 +1,7 @@
 import FluentKit
 import Foundation
 
-/// A question template used in Sagebrush Standards forms and workflows.
+/// A question template used in Harness notations.
 ///
 /// Questions define the structure and behavior of form fields, including
 /// their input types, validation rules, and display options.

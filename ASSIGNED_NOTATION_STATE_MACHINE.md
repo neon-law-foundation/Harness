@@ -811,10 +811,10 @@ struct AuditLogEntry: Codable {
 - `assignment.review_started`
 - `assignment.review_approved`
 - `assignment.review_rejected`
-- `assignment.alignment_requested`
-- `assignment.alignment_completed`
-- `assignment.flow_dependency_detected`
-- `assignment.flow_dependency_resolved`
+- `assignment.workflow_requested`
+- `assignment.workflow_completed`
+- `assignment.questionnaire_dependency_detected`
+- `assignment.questionnaire_dependency_resolved`
 - `assignment.closed`
 - `assignment.reopened`
 

@@ -34,8 +34,8 @@ separate repositories (rather than a monorepo) to ensure:
 # Add the tap
 brew tap neon-law-foundation/tap
 
-# Install the Standards CLI
-brew install standards
+# Install the Harness CLI
+brew install harness
 ```
 
 ### Manual Installation
@@ -44,7 +44,7 @@ brew install standards
 ./install.sh
 ```
 
-This installs the `standards` CLI to `~/.local/bin/standards`.
+This installs the `harness` CLI to `~/.local/bin/harness`.
 
 Make sure `~/.local/bin` is in your PATH:
 
@@ -54,13 +54,13 @@ export PATH="$HOME/.local/bin:$PATH"
 
 ## Commands
 
-### `standards lint <directory>`
+### `harness lint <directory>`
 
 Validates Markdown files. **Does not persist to database.**
 
 ```bash
-standards lint .
-standards lint ShookFamily/Estate
+harness lint .
+harness lint ShookFamily/Estate
 ```
 
 **Rules:**
@@ -71,14 +71,14 @@ standards lint ShookFamily/Estate
 
 README.md and CLAUDE.md files are excluded.
 
-### `standards import <directory>`
+### `harness import <directory>`
 
 Validates and imports markdown files to in-memory SQLite database. Auto-detects git
 repository and commit SHA.
 
 ```bash
-standards import .
-standards import ./notations
+harness import .
+harness import ./notations
 ```
 
 **Requirements:**
@@ -110,12 +110,12 @@ standards import ./notations
 - No remote origin configured
 - Validation failures
 
-### `standards pdf <file>`
+### `harness pdf <file>`
 
 Validates and converts Markdown file to PDF. Strips frontmatter.
 
 ```bash
-standards pdf nevada.md  # Creates nevada.pdf
+harness pdf nevada.md  # Creates nevada.pdf
 ```
 
 **Requirements:**
@@ -126,13 +126,13 @@ standards pdf nevada.md  # Creates nevada.pdf
 
 ## Architecture
 
-The Standards project is organized into three main Swift Package Manager targets:
+The Harness project is organized into three main Swift Package Manager targets:
 
-### StandardsRules
+### HarnessRules
 
 Lightweight validation rules library with zero external dependencies.
 
-- **Location**: `Sources/StandardsRules/`
+- **Location**: `Sources/HarnessRules/`
 - **Purpose**: Shared validation logic for markdown files
 - **Dependencies**: None (Foundation only)
 - **Key Components**:
@@ -142,19 +142,19 @@ Lightweight validation rules library with zero external dependencies.
   - `FrontmatterParser` - YAML frontmatter parsing utility
   - Rule implementations (F101, F102, S101)
 
-### StandardsDAL
+### HarnessDAL
 
 Data Access Layer using Fluent ORM for database operations.
 
-- **Location**: `Sources/StandardsDAL/`
+- **Location**: `Sources/HarnessDAL/`
 - **Purpose**: Database models, migrations, and services
-- **Dependencies**: Fluent, FluentPostgresDriver, FluentSQLiteDriver, Vapor, StandardsRules
+- **Dependencies**: Fluent, FluentPostgresDriver, FluentSQLiteDriver, Vapor, HarnessRules
 - **Key Components**:
   - Fluent models (Notation, Entity, Person, etc.)
   - Database migrations
   - Service layer (NotationService, NotationValidator)
   - Repositories for data access
-  - Validation at model layer using StandardsRules
+  - Validation at model layer using HarnessRules
 
 **Validation Strategy:**
 
@@ -166,13 +166,13 @@ Fluent best practices:
 - Better error messages and type safety
 - Cross-database compatibility (SQLite, PostgreSQL)
 
-### StandardsCLI
+### HarnessCLI
 
 Command-line interface for linting and importing notations.
 
-- **Location**: `Sources/StandardsCLI/`
+- **Location**: `Sources/HarnessCLI/`
 - **Purpose**: Interactive CLI tools
-- **Dependencies**: StandardsRules, StandardsDAL, Logging
+- **Dependencies**: HarnessRules, HarnessDAL, Logging
 - **Key Components**:
   - `LintCommand` - File validation
   - `ImportCommand` - Database import
@@ -185,10 +185,10 @@ Command-line interface for linting and importing notations.
 **Dependency Flow:**
 
 ```text
-StandardsCLI
-    ├── StandardsRules (validation)
-    └── StandardsDAL (persistence)
-            └── StandardsRules (validation)
+HarnessCLI
+    ├── HarnessRules (validation)
+    └── HarnessDAL (persistence)
+            └── HarnessRules (validation)
 ```
 
 This architecture enables:
@@ -200,29 +200,29 @@ This architecture enables:
 
 ## Initial Setup
 
-Before using the `standards` CLI commands, you need to set up your `~/Standards`
-directory structure. This is typically done using a setup script in `~/.standards/`:
+Before using the `harness` CLI commands, you need to set up your `~/Harness`
+directory structure. This is typically done using a setup script in `~/.harness/`:
 
-### `~/.standards/` Directory
+### `~/.harness/` Directory
 
-The `~/.standards/` directory contains:
+The `~/.harness/` directory contains:
 
-- **`setup.sh`** - Shell script to initialize `~/Standards` and clone project repositories
+- **`setup.sh`** - Shell script to initialize `~/Harness` and clone project repositories
 - **`CLAUDE.md`** - Style guide template for legal contract writing
 - **`.claude/`** - Claude Code configuration (agents, commands, etc.)
 
 ### Running Setup
 
 ```bash
-# Initialize ~/Standards directory and clone all project repositories
-~/.standards/setup.sh
+# Initialize ~/Harness directory and clone all project repositories
+~/.harness/setup.sh
 ```
 
 This setup script will:
 
-1. Create the `~/Standards` directory if it doesn't exist
+1. Create the `~/Harness` directory if it doesn't exist
 2. Clone or update git repositories from configured sources
-3. Copy the CLAUDE.md style guide to `~/Standards/CLAUDE.md`
+3. Copy the CLAUDE.md style guide to `~/Harness/CLAUDE.md`
 
 **Note:** The setup script should be customized with your specific repository
 URLs and access credentials. Contact your administrator for the appropriate
@@ -240,7 +240,7 @@ swift build
 
 Releases are published daily via `.github/workflows/daily-release.yml`. The workflow builds arm64,
 x86_64, and universal macOS binaries, creates a GitHub release with checksums, and updates
-`Formula/standards.rb` in
+`Formula/harness.rb` in
 [neon-law-foundation/homebrew-tap](https://github.com/neon-law-foundation/homebrew-tap) — the
 actual GitHub repository behind `brew tap neon-law-foundation/tap`.
 
