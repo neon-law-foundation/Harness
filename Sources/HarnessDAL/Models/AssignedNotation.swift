@@ -11,9 +11,9 @@ import Foundation
 /// ```
 /// open → review → closed
 ///   ↓       ↓
-///   ↓   waiting_for_alignment → review/closed
+///   ↓   waiting_for_workflow → review/closed
 ///   ↓
-/// waiting_for_flow → open/closed
+/// waiting_for_questionnaire → open/closed
 /// ```
 ///
 /// ## Topics
@@ -22,8 +22,8 @@ import Foundation
 ///
 /// - ``open``
 /// - ``review``
-/// - ``waitingForFlow``
-/// - ``waitingForAlignment``
+/// - ``waitingForQuestionnaire``
+/// - ``waitingForWorkflow``
 /// - ``closed``
 public enum AssignedNotationState: String, Codable, CaseIterable, Sendable {
 
@@ -34,8 +34,8 @@ public enum AssignedNotationState: String, Codable, CaseIterable, Sendable {
     ///
     /// ### Valid Transitions
     /// - ``review``: When the respondent submits their response
-    /// - ``waitingForFlow``: When a dependency on another flow is detected
-    /// - ``waitingForAlignment``: When alignment with related entities or people is required
+    /// - ``waitingForQuestionnaire``: When a dependency on another questionnaire is detected
+    /// - ``waitingForWorkflow``: When workflow coordination with related entities or people is required
     /// - ``closed``: When auto-completion rules are met
     case open = "open"
 
@@ -46,30 +46,30 @@ public enum AssignedNotationState: String, Codable, CaseIterable, Sendable {
     ///
     /// ### Valid Transitions
     /// - ``open``: When the reviewer requests changes from the respondent
-    /// - ``waitingForAlignment``: When the reviewer identifies alignment needs
+    /// - ``waitingForWorkflow``: When the reviewer identifies workflow needs
     /// - ``closed``: When the reviewer approves the response
     case review = "review"
 
-    /// The state when waiting for a dependent flow or process to complete.
+    /// The state when waiting for a dependent questionnaire to complete.
     ///
-    /// The notation is blocked because it depends on another workflow to finish first.
+    /// The notation is blocked because it depends on another questionnaire to finish first.
     /// The assignment remains active but no action can be taken until the dependency resolves.
     ///
     /// ### Valid Transitions
-    /// - ``open``: When the blocking flow completes and further action is needed
-    /// - ``closed``: When the blocking flow completes and auto-approval rules are met
-    case waitingForFlow = "waiting_for_flow"
+    /// - ``open``: When the blocking questionnaire completes and further action is needed
+    /// - ``closed``: When the blocking questionnaire completes and auto-approval rules are met
+    case waitingForQuestionnaire = "waiting_for_questionnaire"
 
-    /// The state when waiting for alignment or coordination with other parties.
+    /// The state when waiting for workflow coordination with other parties.
     ///
     /// The notation requires input, agreement, or coordination from related people or entities
-    /// before proceeding. The assignment remains active during alignment.
+    /// before proceeding. The assignment remains active during workflow coordination.
     ///
     /// ### Valid Transitions
-    /// - ``open``: When alignment completes and the respondent needs to update their response
-    /// - ``review``: When alignment completes and the response needs review
-    /// - ``closed``: When alignment completes and auto-approval rules are met
-    case waitingForAlignment = "waiting_for_alignment"
+    /// - ``open``: When the workflow completes and the respondent needs to update their response
+    /// - ``review``: When the workflow completes and the response needs review
+    /// - ``closed``: When the workflow completes and auto-approval rules are met
+    case waitingForWorkflow = "waiting_for_workflow"
 
     /// The final state when the notation assignment is completed and finalized.
     ///

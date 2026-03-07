@@ -1,11 +1,11 @@
 import Foundation
 import Yams
 
-/// F104: flow and alignment state names must reference valid question codes
+/// F104: questionnaire and workflow state names must reference valid question codes
 public struct F104_FlowQuestionCodes: Rule {
     public let code = "F104"
     public let description =
-        "flow and alignment state names must reference valid question codes"
+        "questionnaire and workflow state names must reference valid question codes"
 
     private let validCodes: Set<String>
     private let parser = FrontmatterParser()
@@ -28,8 +28,8 @@ public struct F104_FlowQuestionCodes: Rule {
         let rawFrontmatter = extractRawFrontmatter(from: content)
 
         struct FM: Decodable {
-            let flow: [String: [String: String]]?
-            let alignment: [String: [String: String]]?
+            let questionnaire: [String: [String: String]]?
+            let workflow: [String: [String: String]]?
         }
 
         let fm: FM
@@ -41,22 +41,22 @@ public struct F104_FlowQuestionCodes: Rule {
 
         var violations: [Violation] = []
 
-        guard let flow = fm.flow else {
+        guard let questionnaire = fm.questionnaire else {
             violations.append(
-                Violation(ruleCode: code, message: "Missing required 'flow' key")
+                Violation(ruleCode: code, message: "Missing required 'questionnaire' key")
             )
             return violations
         }
 
-        guard let alignment = fm.alignment else {
+        guard let workflow = fm.workflow else {
             violations.append(
-                Violation(ruleCode: code, message: "Missing required 'alignment' key")
+                Violation(ruleCode: code, message: "Missing required 'workflow' key")
             )
             return violations
         }
 
-        violations += validateMap(flow, named: "flow")
-        violations += validateMap(alignment, named: "alignment")
+        violations += validateMap(questionnaire, named: "questionnaire")
+        violations += validateMap(workflow, named: "workflow")
 
         return violations
     }
