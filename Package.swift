@@ -11,15 +11,27 @@ let package = Package(
     products: [
         .library(name: "HarnessDAL", targets: ["HarnessDAL"]),
         .library(name: "HarnessRules", targets: ["HarnessRules"]),
+        .library(name: "HarnessElementary", targets: ["HarnessElementary"]),
+        .library(name: "HarnessOIDCMiddleware", targets: ["HarnessOIDCMiddleware"]),
+        .library(name: "HarnessDatabaseService", targets: ["HarnessDatabaseService"]),
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/fluent-kit.git", from: "1.52.2"),
         .package(url: "https://github.com/vapor/sql-kit.git", from: "3.33.2"),
         .package(url: "https://github.com/vapor/fluent.git", from: "4.13.0"),
         .package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.8.1"),
+        .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.12.0"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.121.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.8.0"),
         .package(url: "https://github.com/jpsim/Yams.git", from: "6.2.0"),
+        .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
+        .package(
+            url: "https://github.com/swift-server/async-http-client.git",
+            from: "1.0.0"
+        ),
+        .package(url: "https://github.com/sliemeobn/elementary.git", from: "0.3.0"),
+        .package(url: "https://github.com/vapor/jwt-kit.git", from: "5.0.0"),
     ],
     targets: [
         .target(
@@ -49,6 +61,35 @@ let package = Package(
             resources: [
                 .copy("Examples"),
                 .copy("Seeds"),
+            ]
+        ),
+        .target(
+            name: "HarnessElementary",
+            dependencies: [
+                .product(name: "Elementary", package: "elementary"),
+                .product(name: "Hummingbird", package: "hummingbird"),
+            ]
+        ),
+        .target(
+            name: "HarnessOIDCMiddleware",
+            dependencies: [
+                "HarnessDAL",
+                .product(name: "AsyncHTTPClient", package: "async-http-client"),
+                .product(name: "Hummingbird", package: "hummingbird"),
+                .product(name: "JWTKit", package: "jwt-kit"),
+            ]
+        ),
+        .target(
+            name: "HarnessDatabaseService",
+            dependencies: [
+                "HarnessDAL",
+                .product(name: "Fluent", package: "fluent"),
+                .product(name: "FluentKit", package: "fluent-kit"),
+                .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
+                .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOPosix", package: "swift-nio"),
             ]
         ),
         .executableTarget(

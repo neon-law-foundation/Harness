@@ -59,6 +59,8 @@ public actor NotationService {
     ///   - respondentType: Who can be assigned this notation.
     ///   - markdownContent: The notation template content.
     ///   - frontmatter: Structured metadata.
+    ///   - questionnaire: The questionnaire state machine map.
+    ///   - workflow: The workflow state machine map.
     ///   - ownerID: Optional owner entity ID.
     /// - Returns: The created notation.
     /// - Throws: `NotationError` if version already exists.
@@ -71,8 +73,8 @@ public actor NotationService {
         respondentType: RespondentType,
         markdownContent: String,
         frontmatter: [String: String],
-        flow: [String: [String: String]] = [:],
-        alignment: [String: [String: String]] = [:],
+        questionnaire: [String: [String: String]] = [:],
+        workflow: [String: [String: String]] = [:],
         ownerID: Int32?
     ) async throws -> Notation {
         let allVersions = try await Notation.query(on: database)
@@ -106,8 +108,8 @@ public actor NotationService {
         notation.respondentType = respondentType
         notation.markdownContent = markdownContent
         notation.frontmatter = frontmatter
-        notation.flow = flow
-        notation.alignment = alignment
+        notation.questionnaire = questionnaire
+        notation.workflow = workflow
         notation.$owner.id = ownerID
 
         try await notation.save(on: database)
@@ -127,6 +129,8 @@ public actor NotationService {
     ///   - respondentType: Who can be assigned this notation.
     ///   - markdownContent: The notation template content.
     ///   - frontmatter: Structured metadata.
+    ///   - questionnaire: The questionnaire state machine map.
+    ///   - workflow: The workflow state machine map.
     ///   - ownerID: Optional owner entity ID.
     /// - Returns: The created notation.
     /// - Throws: `NotationError.validationFailed` if validation fails, or other `NotationError` types.
@@ -139,8 +143,8 @@ public actor NotationService {
         respondentType: RespondentType,
         markdownContent: String,
         frontmatter: [String: String],
-        flow: [String: [String: String]] = [:],
-        alignment: [String: [String: String]] = [:],
+        questionnaire: [String: [String: String]] = [:],
+        workflow: [String: [String: String]] = [:],
         ownerID: Int32?
     ) async throws -> Notation {
         let validations = validator.validate(
@@ -164,8 +168,8 @@ public actor NotationService {
             respondentType: respondentType,
             markdownContent: markdownContent,
             frontmatter: frontmatter,
-            flow: flow,
-            alignment: alignment,
+            questionnaire: questionnaire,
+            workflow: workflow,
             ownerID: ownerID
         )
     }

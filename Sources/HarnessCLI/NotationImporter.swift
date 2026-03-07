@@ -52,8 +52,8 @@ public struct NotationImporter {
         }
 
         let yaml = try parser.parseYAML(content, as: NotationYAML.self)
-        let flow = yaml?.flow ?? [:]
-        let alignment = yaml?.alignment ?? [:]
+        let questionnaire = yaml?.questionnaire ?? [:]
+        let workflow = yaml?.workflow ?? [:]
 
         let code = fileURL.deletingPathExtension().lastPathComponent
 
@@ -68,8 +68,8 @@ public struct NotationImporter {
             respondentType: respondentType,
             markdownContent: markdownContent,
             frontmatter: frontmatter,
-            flow: flow,
-            alignment: alignment,
+            questionnaire: questionnaire,
+            workflow: workflow,
             ownerID: nil
         )
 
@@ -79,7 +79,7 @@ public struct NotationImporter {
     }
 }
 private struct NotationYAML: Decodable {
-    let flow: [String: [String: String]]?
-    let alignment: [String: [String: String]]?
+    let questionnaire: [String: [String: String]]?
+    let workflow: [String: [String: String]]?
 }
 #endif
