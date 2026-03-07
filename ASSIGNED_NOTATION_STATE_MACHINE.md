@@ -444,7 +444,7 @@ graph TB
           "workflowRequirements.$": "$.action.workflowRequirements"
         }
       },
-      "ResultPath": "$.workquestionnaireResult",
+      "ResultPath": "$.workflowResult",
       "Next": "HandleAlignmentResult"
     },
     "TransitionToWaitingForFlow": {
@@ -485,17 +485,17 @@ graph TB
       "Type": "Choice",
       "Choices": [
         {
-          "Variable": "$.workquestionnaireResult.outcome",
+          "Variable": "$.workflowResult.outcome",
           "StringEquals": "ALIGNED_AUTO_APPROVE",
           "Next": "TransitionToClosed"
         },
         {
-          "Variable": "$.workquestionnaireResult.outcome",
+          "Variable": "$.workflowResult.outcome",
           "StringEquals": "ALIGNED_NEEDS_REVIEW",
           "Next": "TransitionToReview"
         },
         {
-          "Variable": "$.workquestionnaireResult.outcome",
+          "Variable": "$.workflowResult.outcome",
           "StringEquals": "ALIGNED_NEEDS_RESPONSE",
           "Next": "TransitionBackToOpen"
         }
