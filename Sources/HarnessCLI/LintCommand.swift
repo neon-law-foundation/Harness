@@ -33,6 +33,7 @@ struct LintCommand: Command {
             F102_RespondentTypeRequired(),
             F103_PascalCaseFilename(),
             F104_FlowQuestionCodes(validCodes: validCodes),
+            F105_ConfidentialRequired(),
         ])
 
         let result = try engine.lint(directory: url)

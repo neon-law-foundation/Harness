@@ -23,11 +23,14 @@ struct PDFCommand: Command {
         let f101 = F101_TitleRequired()
         let f102 = F102_RespondentTypeRequired()
 
+        let f105 = F105_ConfidentialRequired()
+
         let s101Violations = try s101.validate(file: fileURL)
         let f101Violations = try f101.validate(file: fileURL)
         let f102Violations = try f102.validate(file: fileURL)
+        let f105Violations = try f105.validate(file: fileURL)
 
-        let allViolations = s101Violations + f101Violations + f102Violations
+        let allViolations = s101Violations + f101Violations + f102Violations + f105Violations
 
         if !allViolations.isEmpty {
             print("✗ Validation failed:\n")
@@ -62,6 +65,7 @@ struct PDFCommand: Command {
         let content = try String(contentsOf: fileURL, encoding: .utf8)
 
         var markdownContent = try stripFrontmatter(from: content)
+        markdownContent = PDFMarkdownPreprocessor().preprocess(markdownContent)
 
         if markdownContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             markdownContent = "*This standard contains no content.*\n"
