@@ -129,7 +129,7 @@ struct PDFCommand: Command {
         process.arguments = [
             markdownFile.path,
             "-o", outputURL.path,
-            "--from=markdown",
+            "--from=markdown+raw_tex",
             "--to=pdf",
             "--pdf-engine=xelatex",
             "-V", "geometry:margin=1in",

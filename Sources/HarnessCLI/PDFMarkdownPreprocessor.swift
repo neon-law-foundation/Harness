@@ -27,7 +27,9 @@ struct PDFMarkdownPreprocessor {
 
             let range = NSRange(line.startIndex..., in: line)
             if Self.horizontalRulePattern.firstMatch(in: line, range: range) != nil {
+                result.append("")
                 result.append("\\newpage")
+                result.append("")
             } else {
                 let replaced = Self.signaturePattern.stringByReplacingMatches(
                     in: line,

@@ -11,14 +11,14 @@ struct PDFMarkdownPreprocessorTests {
     func testHorizontalRuleBecomesPageBreak() {
         let input = "Hello\n---\nWorld"
         let output = preprocessor.preprocess(input)
-        #expect(output == "Hello\n\\newpage\nWorld")
+        #expect(output == "Hello\n\n\\newpage\n\nWorld")
     }
 
     @Test("Multiple --- lines become multiple \\newpage")
     func testMultipleHorizontalRules() {
         let input = "A\n---\n---\nB"
         let output = preprocessor.preprocess(input)
-        #expect(output == "A\n\\newpage\n\\newpage\nB")
+        #expect(output == "A\n\n\\newpage\n\n\n\\newpage\n\nB")
     }
 
     @Test("--- inside heading line is not replaced")
@@ -56,6 +56,30 @@ struct PDFMarkdownPreprocessorTests {
         #expect(output == "{client.name}")
     }
 
+    @Test("--- at start of content emits leading blank line")
+    func testHorizontalRuleAtStart() {
+        let input = "---\nContent"
+        #expect(preprocessor.preprocess(input) == "\n\\newpage\n\nContent")
+    }
+
+    @Test("--- at end of content emits trailing blank line")
+    func testHorizontalRuleAtEnd() {
+        let input = "Content\n---"
+        #expect(preprocessor.preprocess(input) == "Content\n\n\\newpage\n")
+    }
+
+    @Test("--- with surrounding whitespace still emits blank-line-wrapped \\newpage")
+    func testHorizontalRuleWithWhitespace() {
+        let input = "Hello\n  ---  \nWorld"
+        #expect(preprocessor.preprocess(input) == "Hello\n\n\\newpage\n\nWorld")
+    }
+
+    @Test("--- inside language-tagged code block is not replaced")
+    func testHRInsideLanguageTaggedCodeBlockUnchanged() {
+        let input = "```swift\n---\n```"
+        #expect(preprocessor.preprocess(input) == "```swift\n---\n```")
+    }
+
     @Test("--- inside code block is not replaced")
     func testHRInsideCodeBlockUnchanged() {
         let input = "```\n---\n```"
@@ -67,6 +91,6 @@ struct PDFMarkdownPreprocessorTests {
     func testBothRulesApplied() {
         let input = "---\n{x.signature}"
         let output = preprocessor.preprocess(input)
-        #expect(output == "\\newpage\n__________________")
+        #expect(output == "\n\\newpage\n\n__________________")
     }
 }
