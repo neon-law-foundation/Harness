@@ -4,8 +4,8 @@ import HarnessDAL
 import Testing
 import Vapor
 
-@Suite("Notation Seeding Tests")
-struct NotationSeedingTests {
+@Suite("Template Seeding Tests")
+struct TemplateSeedingTests {
 
     // MARK: - exampleCode unit tests
 
@@ -50,12 +50,12 @@ struct NotationSeedingTests {
         try await withApplication { app in
             _ = try await HarnessDALConfiguration.runSeeds(on: app.db, logger: app.logger)
 
-            let service = NotationService(database: app.db)
-            let notation = try await service.findLatestByCode("trusts__nevada")
+            let service = TemplateService(database: app.db)
+            let template = try await service.findLatestByCode("trusts__nevada")
 
-            #expect(notation != nil, "trusts__nevada not found after seeding")
-            #expect(notation?.title == "Nevada Trust")
-            #expect(notation?.respondentType == .entity)
+            #expect(template != nil, "trusts__nevada not found after seeding")
+            #expect(template?.title == "Nevada Trust")
+            #expect(template?.respondentType == .entity)
         }
     }
 
@@ -64,7 +64,7 @@ struct NotationSeedingTests {
         try await withApplication { app in
             _ = try await HarnessDALConfiguration.runSeeds(on: app.db, logger: app.logger)
 
-            let service = NotationService(database: app.db)
+            let service = TemplateService(database: app.db)
             let all = try await service.findAllLatest()
             let codes = all.compactMap(\.code)
             let uniqueCodes = Set(codes)
@@ -74,12 +74,12 @@ struct NotationSeedingTests {
     }
 
     @Test("Seeding twice keeps trusts__nevada idempotent")
-    func testNotationSeedIdempotency() async throws {
+    func testTemplateSeedIdempotency() async throws {
         try await withApplication { app in
             _ = try await HarnessDALConfiguration.runSeeds(on: app.db, logger: app.logger)
             _ = try await HarnessDALConfiguration.runSeeds(on: app.db, logger: app.logger)
 
-            let count = try await Notation.query(on: app.db)
+            let count = try await Template.query(on: app.db)
                 .filter(\.$code == "trusts__nevada")
                 .count()
 

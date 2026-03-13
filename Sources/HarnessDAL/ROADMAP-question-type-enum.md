@@ -30,6 +30,7 @@ Create `Sources/HarnessDAL/Migrations/<timestamp>_ConvertQuestionTypeToEnum.swif
 - Re-add the column using the new enum type
 
 Dropping and re-adding is safe because:
+
 - The column stores raw values identical to Swift raw values (e.g. `"yes_no"`)
 - No data loss risk when the table is populated only by seeds (re-runnable)
 

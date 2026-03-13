@@ -3,19 +3,19 @@ import HarnessDAL
 import HarnessRules
 import Testing
 
-@Suite("NotationValidator")
-struct NotationValidatorTests {
-    let validator = NotationValidator()
+@Suite("TemplateValidator")
+struct TemplateValidatorTests {
+    let validator = TemplateValidator()
 
-    @Test("Valid notation passes validation")
-    func testValidNotation() {
+    @Test("Valid template passes validation")
+    func testValidTemplate() {
         let validations = validator.validate(
-            title: "Test Notation",
-            description: "A test notation",
+            title: "Test Template",
+            description: "A test template",
             respondentType: "person",
             frontmatter: [
-                "title": "Test Notation",
-                "description": "A test notation",
+                "title": "Test Template",
+                "description": "A test template",
                 "respondent_type": "person",
             ],
             markdownContent: "# Test\n\nContent here."
@@ -28,11 +28,11 @@ struct NotationValidatorTests {
     func testEmptyTitle() {
         let validations = validator.validate(
             title: "",
-            description: "A test notation",
+            description: "A test template",
             respondentType: "person",
             frontmatter: [
                 "title": "",
-                "description": "A test notation",
+                "description": "A test template",
                 "respondent_type": "person",
             ],
             markdownContent: "# Test"
@@ -47,11 +47,11 @@ struct NotationValidatorTests {
     func testWhitespaceTitle() {
         let validations = validator.validate(
             title: "   ",
-            description: "A test notation",
+            description: "A test template",
             respondentType: "person",
             frontmatter: [
                 "title": "   ",
-                "description": "A test notation",
+                "description": "A test template",
                 "respondent_type": "person",
             ],
             markdownContent: "# Test"
@@ -64,12 +64,12 @@ struct NotationValidatorTests {
     @Test("Invalid respondent type fails validation")
     func testInvalidRespondentType() {
         let validations = validator.validate(
-            title: "Test Notation",
-            description: "A test notation",
+            title: "Test Template",
+            description: "A test template",
             respondentType: "invalid",
             frontmatter: [
-                "title": "Test Notation",
-                "description": "A test notation",
+                "title": "Test Template",
+                "description": "A test template",
                 "respondent_type": "invalid",
             ],
             markdownContent: "# Test"
@@ -87,12 +87,12 @@ struct NotationValidatorTests {
 
         for validType in validTypes {
             let validations = validator.validate(
-                title: "Test Notation",
-                description: "A test notation",
+                title: "Test Template",
+                description: "A test template",
                 respondentType: validType,
                 frontmatter: [
-                    "title": "Test Notation",
-                    "description": "A test notation",
+                    "title": "Test Template",
+                    "description": "A test template",
                     "respondent_type": validType,
                 ],
                 markdownContent: "# Test"
@@ -106,11 +106,11 @@ struct NotationValidatorTests {
     func testMultipleFailures() {
         let validations = validator.validate(
             title: "",
-            description: "A test notation",
+            description: "A test template",
             respondentType: "bad_type",
             frontmatter: [
                 "title": "",
-                "description": "A test notation",
+                "description": "A test template",
                 "respondent_type": "bad_type",
             ],
             markdownContent: "# Test"

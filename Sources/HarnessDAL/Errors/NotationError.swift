@@ -1,55 +1,61 @@
 import Foundation
 
-/// Errors related to notation operations and version management.
+/// Errors related to notation operations and validation.
 public enum NotationError: Error, LocalizedError {
 
-    /// Attempted to create a notation version that already exists.
-    case versionAlreadyExists(repository: Int32, code: String, version: String)
+    /// Template with specified ID not found.
+    case templateNotFound(Int32)
 
-    /// Notation with specified repository and code not found.
-    case notFound(repository: Int32, code: String)
+    /// No latest version found for the specified template.
+    case noLatestVersionFound(repository: Int32, code: String)
 
-    /// No versions found for the specified notation.
-    case noVersionsFound(repository: Int32, code: String)
+    /// Attempted to create a notation from an outdated template version.
+    case outdatedVersion(
+        requestedTemplateID: Int32,
+        requestedVersion: String,
+        requestedInsertedAt: Date,
+        latestTemplateID: Int32,
+        latestVersion: String,
+        latestInsertedAt: Date,
+        code: String,
+        repositoryID: Int32
+    )
 
-    /// Notation failed validation.
-    case validationFailed([NotationValidation])
+    /// An active notation already exists for this template and respondents.
+    case activeAssignmentExists(templateID: Int32, personID: Int32?, entityID: Int32?)
 
-    /// Invalid frontmatter format or content.
-    case invalidFrontmatter(String)
-
-    /// Required field is missing from notation data.
-    case missingRequiredField(String)
-
-    /// A notation with the same title already exists in this repository.
-    case titleAlreadyExists(String)
+    /// Notation is invalid for the template's respondent type.
+    case invalidAssignment(String)
 
     public var errorDescription: String? {
         switch self {
-        case .versionAlreadyExists(let repo, let code, let version):
+        case .templateNotFound(let id):
+            return "Template with ID \(id) not found"
+        case .noLatestVersionFound(let repo, let code):
+            return "No versions found for template '\(code)' in repository \(repo)"
+        case .outdatedVersion(
+            let reqID,
+            let reqVer,
+            let reqDate,
+            let latestID,
+            let latestVer,
+            let latestDate,
+            let code,
+            let repoID
+        ):
+            return """
+                Cannot create notation from outdated template version.
+
+                Requested: Template ID \(reqID), version '\(reqVer)', created \(reqDate)
+                Latest: Template ID \(latestID), version '\(latestVer)', created \(latestDate)
+
+                Please use the latest version of '\(code)' from repository \(repoID).
+                """
+        case .activeAssignmentExists(let templateID, let personID, let entityID):
             return
-                "Notation '\(code)' version '\(version)' already exists in repository \(repo)"
-        case .notFound(let repo, let code):
-            return "Notation '\(code)' not found in repository \(repo)"
-        case .noVersionsFound(let repo, let code):
-            return "No versions found for notation '\(code)' in repository \(repo)"
-        case .validationFailed(let validations):
-            let messages = validations.map { validation in
-                var parts = ["[\(validation.violation.ruleCode)]"]
-                if let field = validation.field {
-                    parts.append("\(field):")
-                }
-                parts.append(validation.violation.message)
-                return parts.joined(separator: " ")
-            }
-            return "Notation validation failed:\n" + messages.joined(separator: "\n")
-        case .invalidFrontmatter(let message):
-            return "Invalid frontmatter: \(message)"
-        case .missingRequiredField(let field):
-            return "Missing required field: \(field)"
-        case .titleAlreadyExists(let title):
-            return "Notation with title '\(title)' already exists in this repository"
+                "Active notation already exists for template \(templateID), person \(personID ?? 0), entity \(entityID ?? 0)"
+        case .invalidAssignment(let reason):
+            return "Invalid notation: \(reason)"
         }
     }
-
 }

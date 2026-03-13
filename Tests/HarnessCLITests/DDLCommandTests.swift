@@ -11,7 +11,6 @@ struct DDLCommandTests {
     /// All 18 schema tables that should appear in sqlite_master after migrations.
     private static let expectedTables: Set<String> = [
         "addresses",
-        "assigned_notations",
         "blobs",
         "credentials",
         "disclosures",
@@ -27,6 +26,7 @@ struct DDLCommandTests {
         "questions",
         "relationship_logs",
         "share_classes",
+        "templates",
         "users",
     ]
 

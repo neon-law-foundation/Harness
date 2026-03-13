@@ -145,8 +145,8 @@ HarnessAPIServer
 | ---------- | -------------------------- | ------------------------ |
 | Transport  | Vapor HTTP                 | AWS Lambda + API Gateway |
 | Database   | SQLite file                | Aurora PostgreSQL        |
-| Swagger UI | ✅ Included                 | ❌ Not included           |
-| Hot Reload | ✅ Yes                      | ❌ No                     |
+| Swagger UI | ✅ Included                | ❌ Not included          |
+| Hot Reload | ✅ Yes                     | ❌ No                    |
 | Deployment | Local only                 | AWS Cloud                |
 
 Both use the **same OpenAPI specification** and **same API implementation**, ensuring consistency

@@ -86,8 +86,8 @@ struct ImportCommand: Command {
             throw CommandError.lintFailed
         }
 
-        let notationService = NotationService(database: database)
-        let importer = NotationImporter(notationService: notationService, logger: logger)
+        let templateService = TemplateService(database: database)
+        let importer = TemplateImporter(templateService: templateService, logger: logger)
 
         let filesToImport = try collectMarkdownFiles(in: url)
 
@@ -96,15 +96,15 @@ struct ImportCommand: Command {
 
         for fileURL in filesToImport {
             do {
-                let notation = try await importer.importMarkdownFile(
+                let template = try await importer.importMarkdownFile(
                     fileURL,
                     gitRepositoryID: gitRepositoryID,
                     version: version
                 )
                 let relativePath = makeRelativePath(fileURL, from: url)
-                print("✅ Imported: \(relativePath) -> \(notation.code ?? "unknown") - \(notation.title)")
+                print("✅ Imported: \(relativePath) -> \(template.code ?? "unknown") - \(template.title)")
                 importCount += 1
-            } catch let error as NotationError {
+            } catch let error as TemplateError {
                 let relativePath = makeRelativePath(fileURL, from: url)
                 print("❌ Failed to import \(relativePath): \(error.errorDescription ?? error.localizedDescription)")
                 failCount += 1
@@ -119,9 +119,9 @@ struct ImportCommand: Command {
 
         print("\n" + String(repeating: "=", count: 50))
         print("📊 Import Summary:")
-        print("   ✅ Successfully imported: \(importCount) notation(s)")
+        print("   ✅ Successfully imported: \(importCount) template(s)")
         if failCount > 0 {
-            print("   ❌ Failed: \(failCount) notation(s)")
+            print("   ❌ Failed: \(failCount) template(s)")
         }
         print(String(repeating: "=", count: 50))
 
