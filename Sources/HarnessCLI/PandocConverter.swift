@@ -4,13 +4,9 @@ enum PandocConverter {
     /// Finds the pandoc executable by searching PATH
     private static func pandocURL() -> URL? {
         let pathEnv = ProcessInfo.processInfo.environment["PATH"] ?? ""
-        #if os(Windows)
-        let separator: Character = ";"
-        let execName = "pandoc.exe"
-        #else
-        let separator: Character = ":"
-        let execName = "pandoc"
-        #endif
+        let isWindows = ProcessInfo.processInfo.environment["OS"]?.contains("Windows") == true
+        let separator: Character = isWindows ? ";" : ":"
+        let execName = isWindows ? "pandoc.exe" : "pandoc"
         for dir in pathEnv.split(separator: separator) {
             let url = URL(fileURLWithPath: String(dir)).appendingPathComponent(execName)
             if FileManager.default.isExecutableFile(atPath: url.path) {
@@ -132,7 +128,6 @@ enum PandocConverter {
         return markdown
     }
 
-    #if os(macOS)
     /// Converts a DOCX file to Pages format using AppleScript
     /// - Parameters:
     ///   - docxPath: Path to the DOCX file
@@ -202,7 +197,6 @@ enum PandocConverter {
             throw CommandError.setupFailed("Failed to convert Pages to DOCX: \(errorMessage)")
         }
     }
-    #endif
 
     /// Restores first-level headers that Pages demotes to plain paragraphs
     /// When Pages exports to DOCX, it converts first-level headers to plain text.
