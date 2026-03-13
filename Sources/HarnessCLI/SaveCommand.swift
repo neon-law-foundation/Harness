@@ -4,16 +4,15 @@ struct SaveCommand: Command {
     let filePath: String
 
     func run() async throws {
-        #if !os(macOS)
-        throw CommandError.platformNotSupported("save command is only available on macOS")
-        #else
+        guard FileManager.default.isExecutableFile(atPath: "/usr/bin/osascript") else {
+            throw CommandError.platformNotSupported("save command is only available on macOS")
+        }
+
         try Self.saveTempFile(to: filePath)
 
         print("✓ Saved changes from temp file back to \(filePath)")
-        #endif
     }
 
-    #if os(macOS)
     static func saveTempFile(to originalFilePath: String) throws {
         let originalURL = URL(fileURLWithPath: originalFilePath)
 
@@ -63,5 +62,4 @@ struct SaveCommand: Command {
         try? FileManager.default.removeItem(atPath: tempPagesPath)
         try? FileManager.default.removeItem(atPath: tempDOCXPath)
     }
-    #endif
 }

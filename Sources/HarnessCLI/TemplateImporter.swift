@@ -1,8 +1,7 @@
-#if os(macOS)
 import Foundation
-import Logging
 import HarnessDAL
 import HarnessRules
+import Logging
 
 /// Imports markdown template files into the database.
 public struct TemplateImporter {
@@ -86,4 +85,3 @@ private struct TemplateYAML: Decodable {
     let questionnaire: [String: [String: String]]?
     let workflow: [String: [String: String]]?
 }
-#endif

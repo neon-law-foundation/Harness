@@ -4,9 +4,10 @@ struct EditCommand: Command {
     let filePath: String
 
     func run() async throws {
-        #if !os(macOS)
-        throw CommandError.platformNotSupported("edit command is only available on macOS")
-        #else
+        guard FileManager.default.isExecutableFile(atPath: "/usr/bin/osascript") else {
+            throw CommandError.platformNotSupported("edit command is only available on macOS")
+        }
+
         let tempPath = try Self.createTempFile(from: filePath)
 
         try openInTextEdit(tempPath)
@@ -16,10 +17,8 @@ struct EditCommand: Command {
         print("")
         print("  Edit the file and save it (⌘S)")
         print("  Then run: harness save \(filePath)")
-        #endif
     }
 
-    #if os(macOS)
     static func createTempFile(from filePath: String) throws -> String {
         let fileURL = URL(fileURLWithPath: filePath)
 
@@ -82,5 +81,4 @@ struct EditCommand: Command {
             throw CommandError.setupFailed("Failed to open Pages: \(errorMessage)")
         }
     }
-    #endif
 }
