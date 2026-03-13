@@ -1,6 +1,8 @@
 import Foundation
 
 struct ClaudeSetupCommand: Command {
+    var outputDirectory: String? = nil
+
     func run() async throws {
         let claudeMdContent = """
             # Legal Review
@@ -38,8 +40,8 @@ struct ClaudeSetupCommand: Command {
             - Inclusive language — use terms inclusive of all people; avoid gendered or violent language
             """
 
-        let outputURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-            .appendingPathComponent("CLAUDE.md")
+        let baseDir = outputDirectory ?? FileManager.default.currentDirectoryPath
+        let outputURL = URL(fileURLWithPath: baseDir).appendingPathComponent("CLAUDE.md")
 
         try claudeMdContent.write(to: outputURL, atomically: true, encoding: .utf8)
 
