@@ -23,6 +23,8 @@ func printUsage() {
           ddl                 Print CREATE TABLE statements for all schema tables
           list questions      List all seeded questions with their prompts
           list jurisdictions  List all seeded jurisdictions with their types
+          list templates      List all seeded notation templates with their titles
+          show template <code>  Show full content of a notation template by code
 
         Options:
           --help, -h          Show this help message
@@ -38,6 +40,8 @@ func printUsage() {
           harness ddl
           harness list questions
           harness list jurisdictions
+          harness list templates
+          harness show template nevada_trust
         """
     )
 }
@@ -111,9 +115,27 @@ Task {
                 command = QuestionsListCommand()
             case "jurisdictions":
                 command = JurisdictionsListCommand()
+            case "templates":
+                command = TemplatesListCommand()
             default:
                 print("Error: Unknown list subcommand: '\(subCommand)'")
-                print("Usage: harness list <questions|jurisdictions>")
+                print("Usage: harness list <questions|jurisdictions|templates>")
+                exit(1)
+            }
+
+        case "show":
+            let subCommand = arguments.count > 2 ? arguments[2] : ""
+            switch subCommand {
+            case "template":
+                guard arguments.count > 3 else {
+                    print("Error: Missing code argument for show template command")
+                    print("Usage: harness show template <code>")
+                    exit(1)
+                }
+                command = ShowTemplateCommand(code: arguments[3])
+            default:
+                print("Error: Unknown show subcommand: '\(subCommand)'")
+                print("Usage: harness show template <code>")
                 exit(1)
             }
 

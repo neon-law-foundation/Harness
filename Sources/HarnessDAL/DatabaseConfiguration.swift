@@ -46,6 +46,7 @@ public struct HarnessDALConfiguration {
     public static func runSeeds(on database: Database, logger: Logger) async throws -> Int {
         var totalSeeds = 0
         let seedOrder: [String] = [
+            "GitRepository",
             "Jurisdiction",
             "EntityType",
             "Question",
@@ -74,6 +75,8 @@ public struct HarnessDALConfiguration {
                 totalSeeds += count
             }
         }
+
+        try await seedNotationsFromExamples(on: database, logger: logger)
 
         logger.info("Seed process completed: \(totalSeeds) total records")
         return totalSeeds
@@ -180,6 +183,8 @@ public struct HarnessDALConfiguration {
         logger: Logger
     ) async throws {
         switch modelName {
+        case "GitRepository":
+            try await insertGitRepository(record: record, lookupFields: lookupFields, database: database)
         case "Jurisdiction":
             try await insertJurisdiction(record: record, lookupFields: lookupFields, database: database)
         case "EntityType":

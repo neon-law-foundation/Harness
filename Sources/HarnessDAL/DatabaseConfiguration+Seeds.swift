@@ -1,10 +1,177 @@
 import FluentKit
 import Foundation
+import HarnessRules
 import Logging
 
 // MARK: - Seed Insert Functions
 
 extension HarnessDALConfiguration {
+
+    // MARK: - GitRepository
+
+    public static func insertGitRepository(
+        record: [String: Any],
+        lookupFields: [String],
+        database: Database
+    ) async throws {
+        let repositoryName = record["repository_name"] as? String ?? ""
+
+        if !lookupFields.isEmpty {
+            if let existing = try await GitRepository.query(on: database)
+                .filter(\.$repositoryName == repositoryName)
+                .first()
+            {
+                if let awsAccountID = record["aws_account_id"] as? String {
+                    existing.awsAccountID = awsAccountID
+                }
+                if let awsRegion = record["aws_region"] as? String {
+                    existing.awsRegion = awsRegion
+                }
+                if let codecommitRepositoryID = record["codecommit_repository_id"] as? String {
+                    existing.codecommitRepositoryID = codecommitRepositoryID
+                }
+                if let repositoryARN = record["repository_arn"] as? String {
+                    existing.repositoryARN = repositoryARN
+                }
+                existing.description = record["description"] as? String
+                try await existing.save(on: database)
+                return
+            }
+        }
+
+        let gitRepository = GitRepository()
+        gitRepository.repositoryName = repositoryName
+        gitRepository.awsAccountID = record["aws_account_id"] as? String ?? ""
+        gitRepository.awsRegion = record["aws_region"] as? String ?? ""
+        gitRepository.codecommitRepositoryID = record["codecommit_repository_id"] as? String ?? ""
+        gitRepository.repositoryARN = record["repository_arn"] as? String ?? ""
+        gitRepository.description = record["description"] as? String
+        try await gitRepository.save(on: database)
+    }
+
+    // MARK: - Notation Examples
+
+    /// Derives the notation code from a file URL relative to the Examples base directory.
+    ///
+    /// Path components are joined with `__` and the result is lowercased, so
+    /// `Trusts/nevada.md` becomes `trusts__nevada`.
+    ///
+    /// - Parameters:
+    ///   - fileURL: The `.md` file URL.
+    ///   - baseURL: The Examples directory URL.
+    /// - Returns: The derived code string.
+    public static func exampleCode(for fileURL: URL, relativeTo baseURL: URL) -> String {
+        let basePath = baseURL.path.hasSuffix("/") ? baseURL.path : baseURL.path + "/"
+        let filePath = fileURL.path
+        let relativePath =
+            filePath.hasPrefix(basePath)
+            ? String(filePath.dropFirst(basePath.count))
+            : fileURL.lastPathComponent
+        let withoutExtension = (relativePath as NSString).deletingPathExtension
+        return withoutExtension.replacingOccurrences(of: "/", with: "__").lowercased()
+    }
+
+    public static func seedNotationsFromExamples(on database: Database, logger: Logger) async throws {
+        guard
+            let gitRepo = try await GitRepository.query(on: database)
+                .filter(\.$repositoryName == "harness-examples")
+                .first()
+        else {
+            logger.warning("No 'harness-examples' git repository found, skipping notation seeding")
+            return
+        }
+
+        guard let repoID = gitRepo.id else {
+            logger.warning("Git repository has no ID, skipping notation seeding")
+            return
+        }
+
+        guard let examplesURL = Bundle.module.resourceURL?.appendingPathComponent("Examples") else {
+            logger.warning("Examples directory not found in bundle, skipping notation seeding")
+            return
+        }
+
+        guard
+            let enumerator = FileManager.default.enumerator(
+                at: examplesURL,
+                includingPropertiesForKeys: [.isRegularFileKey],
+                options: [.skipsHiddenFiles]
+            )
+        else {
+            logger.warning("Could not enumerate Examples directory")
+            return
+        }
+
+        let fileURLs = enumerator.allObjects.compactMap { $0 as? URL }.filter {
+            $0.pathExtension == "md"
+        }
+
+        let parser = FrontmatterParser()
+        let service = NotationService(database: database)
+
+        for fileURL in fileURLs {
+
+            logger.info("Seeding notation from \(fileURL.lastPathComponent)")
+
+            do {
+                let content = try String(contentsOf: fileURL, encoding: .utf8)
+
+                guard let yamlStruct = try parser.parseYAML(content, as: ExampleNotationYAML.self)
+                else {
+                    logger.warning("No frontmatter in \(fileURL.lastPathComponent), skipping")
+                    continue
+                }
+
+                guard let title = yamlStruct.title, !title.isEmpty else {
+                    logger.warning("Missing title in \(fileURL.lastPathComponent), skipping")
+                    continue
+                }
+
+                guard let respondentTypeRaw = yamlStruct.respondentType,
+                    let respondentType = RespondentType(rawValue: respondentTypeRaw)
+                else {
+                    logger.warning(
+                        "Missing/invalid respondent_type in \(fileURL.lastPathComponent), skipping"
+                    )
+                    continue
+                }
+
+                guard let (frontmatter, markdownContent) = parser.parse(content) else {
+                    logger.warning("Could not parse frontmatter in \(fileURL.lastPathComponent), skipping")
+                    continue
+                }
+
+                let code = exampleCode(for: fileURL, relativeTo: examplesURL)
+                let description = yamlStruct.description ?? ""
+
+                _ = try await service.createVersion(
+                    gitRepositoryID: repoID,
+                    code: code,
+                    version: "seed-v1",
+                    title: title,
+                    description: description,
+                    respondentType: respondentType,
+                    markdownContent: markdownContent,
+                    frontmatter: frontmatter,
+                    questionnaire: yamlStruct.questionnaire ?? [:],
+                    workflow: yamlStruct.workflow ?? [:],
+                    ownerID: nil
+                )
+
+                logger.info("Seeded notation: \(code)")
+            } catch NotationError.versionAlreadyExists {
+                logger.debug("Notation already seeded, skipping: \(fileURL.lastPathComponent)")
+            } catch NotationError.titleAlreadyExists {
+                logger.debug(
+                    "Notation title already exists, skipping: \(fileURL.lastPathComponent)"
+                )
+            } catch {
+                logger.error(
+                    "Failed to seed notation from \(fileURL.lastPathComponent): \(error)"
+                )
+            }
+        }
+    }
 
     // MARK: - Jurisdiction
 
@@ -632,5 +799,23 @@ extension HarnessDALConfiguration {
 
         try await address.save(on: database)
         return address.id
+    }
+}
+
+// MARK: - Private Types
+
+private struct ExampleNotationYAML: Decodable {
+    let title: String?
+    let description: String?
+    let respondentType: String?
+    let questionnaire: [String: [String: String]]?
+    let workflow: [String: [String: String]]?
+
+    enum CodingKeys: String, CodingKey {
+        case title
+        case description
+        case respondentType = "respondent_type"
+        case questionnaire
+        case workflow
     }
 }

@@ -10,6 +10,41 @@ public actor NotationService {
         self.database = database
     }
 
+    /// Finds the latest version of a notation by code across all repositories.
+    ///
+    /// - Parameter code: The notation code to look up.
+    /// - Returns: The most recent notation with that code, or nil if none exists.
+    public func findLatestByCode(_ code: String) async throws -> Notation? {
+        let results = try await Notation.query(on: database)
+            .sort(\.$insertedAt, .descending)
+            .all()
+
+        return results.first { $0.code == code }
+    }
+
+    /// Finds the latest version of each unique notation code across all repositories.
+    ///
+    /// Results are sorted by `insertedAt` descending, then deduplicated by `code`,
+    /// so the most recent version of each notation is returned.
+    ///
+    /// - Returns: An array of the latest notation per unique code.
+    public func findAllLatest() async throws -> [Notation] {
+        let all = try await Notation.query(on: database)
+            .sort(\.$insertedAt, .descending)
+            .all()
+
+        var seen = Set<String>()
+        var result: [Notation] = []
+        for notation in all {
+            guard let code = notation.code else { continue }
+            if !seen.contains(code) {
+                seen.insert(code)
+                result.append(notation)
+            }
+        }
+        return result
+    }
+
     /// Finds the latest version of a notation by repository and code.
     ///
     /// - Parameters:
