@@ -1,8 +1,7 @@
-#if os(macOS)
 import Foundation
-import Logging
 import HarnessDAL
 import HarnessRules
+import Logging
 
 struct ImportCommand: Command {
     let directoryPath: String
@@ -253,4 +252,3 @@ struct ImportCommand: Command {
             ? file.path : file.path.replacingOccurrences(of: base.path + "/", with: "")
     }
 }
-#endif
