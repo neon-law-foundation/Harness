@@ -5,17 +5,17 @@ struct TemplatesListCommand: Command {
         let dbManager = try await DatabaseManager(seed: true)
         let database = dbManager.getDatabase()
 
-        let service = NotationService(database: database)
-        let notations = try await service.findAllLatest()
+        let service = TemplateService(database: database)
+        let templates = try await service.findAllLatest()
 
         try await dbManager.shutdown()
 
-        if notations.isEmpty {
+        if templates.isEmpty {
             print("No templates found.")
             return
         }
 
-        let sorted = notations.sorted { ($0.code ?? "") < ($1.code ?? "") }
+        let sorted = templates.sorted { ($0.code ?? "") < ($1.code ?? "") }
         let maxCodeLength = sorted.map { ($0.code ?? "").count }.max() ?? 4
         let codeWidth = max(maxCodeLength, 4)
         let maxTitleLength = sorted.map(\.title.count).max() ?? 5
@@ -32,18 +32,18 @@ struct TemplatesListCommand: Command {
                 + String(repeating: "-", count: 14)
         )
 
-        for notation in sorted {
-            let paddedCode = (notation.code ?? "").padding(
+        for template in sorted {
+            let paddedCode = (template.code ?? "").padding(
                 toLength: codeWidth,
                 withPad: " ",
                 startingAt: 0
             )
-            let paddedTitle = notation.title.padding(
+            let paddedTitle = template.title.padding(
                 toLength: titleWidth,
                 withPad: " ",
                 startingAt: 0
             )
-            print("\(paddedCode)  \(paddedTitle)  \(notation.respondentType.rawValue)")
+            print("\(paddedCode)  \(paddedTitle)  \(template.respondentType.rawValue)")
         }
     }
 }

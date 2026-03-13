@@ -49,9 +49,9 @@ extension HarnessDALConfiguration {
         try await gitRepository.save(on: database)
     }
 
-    // MARK: - Notation Examples
+    // MARK: - Template Examples
 
-    /// Derives the notation code from a file URL relative to the Examples base directory.
+    /// Derives the template code from a file URL relative to the Examples base directory.
     ///
     /// Path components are joined with `__` and the result is lowercased, so
     /// `Trusts/nevada.md` becomes `trusts__nevada`.
@@ -77,17 +77,17 @@ extension HarnessDALConfiguration {
                 .filter(\.$repositoryName == "harness-examples")
                 .first()
         else {
-            logger.warning("No 'harness-examples' git repository found, skipping notation seeding")
+            logger.warning("No 'harness-examples' git repository found, skipping template seeding")
             return
         }
 
         guard let repoID = gitRepo.id else {
-            logger.warning("Git repository has no ID, skipping notation seeding")
+            logger.warning("Git repository has no ID, skipping template seeding")
             return
         }
 
         guard let examplesURL = Bundle.module.resourceURL?.appendingPathComponent("Examples") else {
-            logger.warning("Examples directory not found in bundle, skipping notation seeding")
+            logger.warning("Examples directory not found in bundle, skipping template seeding")
             return
         }
 
@@ -107,16 +107,16 @@ extension HarnessDALConfiguration {
         }
 
         let parser = FrontmatterParser()
-        let service = NotationService(database: database)
+        let service = TemplateService(database: database)
 
         for fileURL in fileURLs {
 
-            logger.info("Seeding notation from \(fileURL.lastPathComponent)")
+            logger.info("Seeding template from \(fileURL.lastPathComponent)")
 
             do {
                 let content = try String(contentsOf: fileURL, encoding: .utf8)
 
-                guard let yamlStruct = try parser.parseYAML(content, as: ExampleNotationYAML.self)
+                guard let yamlStruct = try parser.parseYAML(content, as: ExampleTemplateYAML.self)
                 else {
                     logger.warning("No frontmatter in \(fileURL.lastPathComponent), skipping")
                     continue
@@ -158,16 +158,16 @@ extension HarnessDALConfiguration {
                     ownerID: nil
                 )
 
-                logger.info("Seeded notation: \(code)")
-            } catch NotationError.versionAlreadyExists {
-                logger.debug("Notation already seeded, skipping: \(fileURL.lastPathComponent)")
-            } catch NotationError.titleAlreadyExists {
+                logger.info("Seeded template: \(code)")
+            } catch TemplateError.versionAlreadyExists {
+                logger.debug("Template already seeded, skipping: \(fileURL.lastPathComponent)")
+            } catch TemplateError.titleAlreadyExists {
                 logger.debug(
-                    "Notation title already exists, skipping: \(fileURL.lastPathComponent)"
+                    "Template title already exists, skipping: \(fileURL.lastPathComponent)"
                 )
             } catch {
                 logger.error(
-                    "Failed to seed notation from \(fileURL.lastPathComponent): \(error)"
+                    "Failed to seed template from \(fileURL.lastPathComponent): \(error)"
                 )
             }
         }
@@ -804,7 +804,7 @@ extension HarnessDALConfiguration {
 
 // MARK: - Private Types
 
-private struct ExampleNotationYAML: Decodable {
+private struct ExampleTemplateYAML: Decodable {
     let title: String?
     let description: String?
     let respondentType: String?

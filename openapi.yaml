@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Harness API
-  description: API for managing legal standards, entities, credentials, and notations
+  description: API for managing legal standards, entities, credentials, templates, and notations
   version: 1.0.0
   contact:
     name: Neon Law Foundation
@@ -22,8 +22,10 @@ tags:
     description: Professional credentials operations
   - name: jurisdictions
     description: Jurisdiction reference data
+  - name: templates
+    description: Reusable document template definitions
   - name: notations
-    description: Legal notation and document management
+    description: Formal notation records assigned to respondents
 
 paths:
   /health:

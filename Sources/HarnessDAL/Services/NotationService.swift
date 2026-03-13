@@ -1,211 +1,141 @@
 import FluentKit
 import Foundation
 
-/// Service responsible for notation version management and validation.
+/// Service responsible for creating and managing notations with version validation.
 public actor NotationService {
     private let database: Database
-    private let validator = NotationValidator()
+    private let templateService: TemplateService
 
     public init(database: Database) {
         self.database = database
+        self.templateService = TemplateService(database: database)
     }
 
-    /// Finds the latest version of a notation by code across all repositories.
+    /// Creates a new notation after validating it uses the latest template version.
     ///
-    /// - Parameter code: The notation code to look up.
-    /// - Returns: The most recent notation with that code, or nil if none exists.
-    public func findLatestByCode(_ code: String) async throws -> Notation? {
-        let results = try await Notation.query(on: database)
-            .sort(\.$insertedAt, .descending)
-            .all()
-
-        return results.first { $0.code == code }
-    }
-
-    /// Finds the latest version of each unique notation code across all repositories.
-    ///
-    /// Results are sorted by `insertedAt` descending, then deduplicated by `code`,
-    /// so the most recent version of each notation is returned.
-    ///
-    /// - Returns: An array of the latest notation per unique code.
-    public func findAllLatest() async throws -> [Notation] {
-        let all = try await Notation.query(on: database)
-            .sort(\.$insertedAt, .descending)
-            .all()
-
-        var seen = Set<String>()
-        var result: [Notation] = []
-        for notation in all {
-            guard let code = notation.code else { continue }
-            if !seen.contains(code) {
-                seen.insert(code)
-                result.append(notation)
-            }
-        }
-        return result
-    }
-
-    /// Finds the latest version of a notation by repository and code.
+    /// Enforces the business rule that notations can only be created from the latest version
+    /// of a template. If a newer version exists, the request is rejected with
+    /// ``NotationError/outdatedVersion(requestedTemplateID:requestedVersion:requestedInsertedAt:latestTemplateID:latestVersion:latestInsertedAt:code:repositoryID:)``.
     ///
     /// - Parameters:
-    ///   - gitRepositoryID: The ID of the git repository.
-    ///   - code: The notation code.
-    /// - Returns: The most recent notation, or nil if none exists.
-    public func findLatestVersion(
-        gitRepositoryID: Int32,
-        code: String
-    ) async throws -> Notation? {
-        let results = try await Notation.query(on: database)
-            .filter(\.$gitRepository.$id == gitRepositoryID)
-            .sort(\.$insertedAt, .descending)
-            .all()
-
-        return results.first { $0.code == code }
-    }
-
-    /// Finds all versions of a notation ordered by most recent first.
-    ///
-    /// - Parameters:
-    ///   - gitRepositoryID: The ID of the git repository.
-    ///   - code: The notation code.
-    /// - Returns: An array of all versions of the notation.
-    public func findAllVersions(
-        gitRepositoryID: Int32,
-        code: String
-    ) async throws -> [Notation] {
-        let results = try await Notation.query(on: database)
-            .filter(\.$gitRepository.$id == gitRepositoryID)
-            .sort(\.$insertedAt, .descending)
-            .all()
-
-        return results.filter { $0.code == code }
-    }
-
-    /// Creates a new notation version.
-    ///
-    /// Validates that this creates a newer version than existing ones.
-    ///
-    /// - Parameters:
-    ///   - gitRepositoryID: The ID of the git repository.
-    ///   - code: Unique code for this notation type.
-    ///   - version: Git commit SHA.
-    ///   - title: Display title.
-    ///   - description: Brief description.
-    ///   - respondentType: Who can be assigned this notation.
-    ///   - markdownContent: The notation template content.
-    ///   - frontmatter: Structured metadata.
-    ///   - questionnaire: The questionnaire state machine map.
-    ///   - workflow: The workflow state machine map.
-    ///   - ownerID: Optional owner entity ID.
+    ///   - templateID: The template to assign.
+    ///   - personID: The person to assign to (if applicable).
+    ///   - entityID: The entity to assign to (if applicable).
+    ///   - state: The initial state for the notation (defaults to `.open`).
     /// - Returns: The created notation.
-    /// - Throws: `NotationError` if version already exists.
-    public func createVersion(
-        gitRepositoryID: Int32,
-        code: String,
-        version: String,
-        title: String,
-        description: String,
-        respondentType: RespondentType,
-        markdownContent: String,
-        frontmatter: [String: String],
-        questionnaire: [String: [String: String]] = [:],
-        workflow: [String: [String: String]] = [:],
-        ownerID: Int32?
+    /// - Throws: ``NotationError`` if validation fails.
+    public func createNotation(
+        templateID: Int32,
+        personID: Int32?,
+        entityID: Int32?,
+        state: NotationState = .open
     ) async throws -> Notation {
-        let allVersions = try await Notation.query(on: database)
-            .filter(\.$gitRepository.$id == gitRepositoryID)
-            .filter(\.$version == version)
-            .all()
 
-        if allVersions.contains(where: { $0.code == code }) {
-            throw NotationError.versionAlreadyExists(
-                repository: gitRepositoryID,
-                code: code,
-                version: version
+        guard let template = try await Template.find(templateID, on: database) else {
+            throw NotationError.templateNotFound(templateID)
+        }
+
+        try await template.$gitRepository.load(on: database)
+
+        guard let gitRepo = template.gitRepository else {
+            throw NotationError.templateNotFound(templateID)
+        }
+        let gitRepoID = try gitRepo.requireID()
+
+        guard let code = template.code else {
+            throw NotationError.templateNotFound(templateID)
+        }
+
+        guard
+            let latestVersion = try await templateService.findLatestVersion(
+                gitRepositoryID: gitRepoID,
+                code: code
+            )
+        else {
+            throw NotationError.noLatestVersionFound(
+                repository: gitRepoID,
+                code: code
             )
         }
 
-        let existingWithTitle = try await Notation.query(on: database)
-            .filter(\.$gitRepository.$id == gitRepositoryID)
-            .filter(\.$title == title)
-            .first()
+        let latestTemplateID = try latestVersion.requireID()
+        if latestTemplateID != templateID {
+            throw NotationError.outdatedVersion(
+                requestedTemplateID: templateID,
+                requestedVersion: template.version,
+                requestedInsertedAt: template.insertedAt!,
+                latestTemplateID: latestTemplateID,
+                latestVersion: latestVersion.version,
+                latestInsertedAt: latestVersion.insertedAt!,
+                code: code,
+                repositoryID: gitRepoID
+            )
+        }
 
-        if existingWithTitle != nil {
-            throw NotationError.titleAlreadyExists(title)
+        let hasActive = try await Notation.hasActiveAssignment(
+            templateID: templateID,
+            personID: personID,
+            entityID: entityID,
+            on: database
+        )
+
+        if hasActive {
+            throw NotationError.activeAssignmentExists(
+                templateID: templateID,
+                personID: personID,
+                entityID: entityID
+            )
         }
 
         let notation = Notation()
-        notation.$gitRepository.id = gitRepositoryID
-        notation.code = code
-        notation.version = version
-        notation.title = title
-        notation.description = description
-        notation.respondentType = respondentType
-        notation.markdownContent = markdownContent
-        notation.frontmatter = frontmatter
-        notation.questionnaire = questionnaire
-        notation.workflow = workflow
-        notation.$owner.id = ownerID
+        notation.$template.id = templateID
+        notation.$person.id = personID
+        notation.$entity.id = entityID
+        notation.state = state
 
+        try await notation.validate(on: database)
         try await notation.save(on: database)
+
         return notation
     }
 
-    /// Creates a new notation version with validation.
+    /// Creates a notation using repository and code, automatically using the latest template version.
     ///
-    /// Validates all notation fields before saving to the database.
+    /// This convenience method finds the latest version of a template by its repository and code,
+    /// then creates a notation against it.
     ///
     /// - Parameters:
     ///   - gitRepositoryID: The ID of the git repository.
-    ///   - code: Unique code for this notation type.
-    ///   - version: Git commit SHA.
-    ///   - title: Display title.
-    ///   - description: Brief description.
-    ///   - respondentType: Who can be assigned this notation.
-    ///   - markdownContent: The notation template content.
-    ///   - frontmatter: Structured metadata.
-    ///   - questionnaire: The questionnaire state machine map.
-    ///   - workflow: The workflow state machine map.
-    ///   - ownerID: Optional owner entity ID.
+    ///   - code: The template code.
+    ///   - personID: The person to assign to (if applicable).
+    ///   - entityID: The entity to assign to (if applicable).
+    ///   - state: The initial state for the notation (defaults to `.open`).
     /// - Returns: The created notation.
-    /// - Throws: `NotationError.validationFailed` if validation fails, or other `NotationError` types.
-    public func createVersionWithValidation(
+    /// - Throws: ``NotationError`` if no latest version is found or validation fails.
+    public func createNotationByCode(
         gitRepositoryID: Int32,
         code: String,
-        version: String,
-        title: String,
-        description: String,
-        respondentType: RespondentType,
-        markdownContent: String,
-        frontmatter: [String: String],
-        questionnaire: [String: [String: String]] = [:],
-        workflow: [String: [String: String]] = [:],
-        ownerID: Int32?
+        personID: Int32?,
+        entityID: Int32?,
+        state: NotationState = .open
     ) async throws -> Notation {
-        let validations = validator.validate(
-            title: title,
-            description: description,
-            respondentType: respondentType.rawValue,
-            frontmatter: frontmatter,
-            markdownContent: markdownContent
-        )
-
-        if !validations.isEmpty {
-            throw NotationError.validationFailed(validations)
+        guard
+            let latestTemplate = try await templateService.findLatestVersion(
+                gitRepositoryID: gitRepositoryID,
+                code: code
+            )
+        else {
+            throw NotationError.noLatestVersionFound(
+                repository: gitRepositoryID,
+                code: code
+            )
         }
 
-        return try await createVersion(
-            gitRepositoryID: gitRepositoryID,
-            code: code,
-            version: version,
-            title: title,
-            description: description,
-            respondentType: respondentType,
-            markdownContent: markdownContent,
-            frontmatter: frontmatter,
-            questionnaire: questionnaire,
-            workflow: workflow,
-            ownerID: ownerID
+        return try await createNotation(
+            templateID: try latestTemplate.requireID(),
+            personID: personID,
+            entityID: entityID,
+            state: state
         )
     }
 }

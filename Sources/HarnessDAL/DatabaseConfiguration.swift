@@ -39,6 +39,7 @@ public struct HarnessDALConfiguration {
             AddUniqueTitlePerRepository(),
             RenameFlowWorkflowColumns(),
             RenameAssignedNotationStateValues(),
+            RenameNotationTables(),
         ]
     }
 
