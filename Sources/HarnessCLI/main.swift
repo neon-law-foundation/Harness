@@ -25,6 +25,7 @@ func printUsage() {
           list jurisdictions  List all seeded jurisdictions with their types
           list templates      List all seeded notation templates with their titles
           show template <code>  Show full content of a notation template by code
+          claude setup        Create a CLAUDE.md in the current directory for legal review
 
         Options:
           --help, -h          Show this help message
@@ -42,6 +43,7 @@ func printUsage() {
           harness list jurisdictions
           harness list templates
           harness show template nevada_trust
+          harness claude setup
         """
     )
 }
@@ -132,6 +134,17 @@ Task {
             default:
                 print("Error: Unknown show subcommand: '\(subCommand)'")
                 print("Usage: harness show template <code>")
+                exit(1)
+            }
+
+        case "claude":
+            let subCommand = arguments.count > 2 ? arguments[2] : ""
+            switch subCommand {
+            case "setup":
+                command = ClaudeSetupCommand()
+            default:
+                print("Error: Unknown claude subcommand: '\(subCommand)'")
+                print("Usage: harness claude setup")
                 exit(1)
             }
 
