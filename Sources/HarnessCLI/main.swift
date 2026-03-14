@@ -25,7 +25,14 @@ func printUsage() {
           list jurisdictions  List all seeded jurisdictions with their types
           list templates      List all seeded notation templates with their titles
           show template <code>  Show full content of a notation template by code
-          claude setup        Create a CLAUDE.md in the current directory for legal review
+          claude setup        Create a CLAUDE.md and .claude/commands/review.md in the current directory
+                              CLAUDE.md includes the Harness glossary and legal review guidance
+                              review.md provides the /review skill: a 12-agent Lawyer Council
+                              where each agent embodies a zodiac sign and legal specialty —
+                              Aries (Trial), Taurus (Estate), Gemini (Transactional),
+                              Cancer (Family), Leo (Constitutional), Virgo (Regulatory),
+                              Libra (Mediator), Scorpio (Fraud), Sagittarius (International),
+                              Capricorn (Corporate), Aquarius (Technology), Pisces (Public Interest)
 
         Options:
           --help, -h          Show this help message
