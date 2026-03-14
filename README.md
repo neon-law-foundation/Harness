@@ -38,20 +38,6 @@ brew tap neon-law-foundation/tap
 brew install harness
 ```
 
-### Manual Installation
-
-```bash
-./install.sh
-```
-
-This installs the `harness` CLI to `~/.local/bin/harness`.
-
-Make sure `~/.local/bin` is in your PATH:
-
-```bash
-export PATH="$HOME/.local/bin:$PATH"
-```
-
 ## Commands
 
 ### `harness lint <directory>`
