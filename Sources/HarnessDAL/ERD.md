@@ -281,8 +281,6 @@ open → review → closed
 waiting_for_questionnaire → open/closed
 ```
 
-See `ASSIGNED_NOTATION_STATE_MACHINE.md` for detailed state transition documentation.
-
 ### 4. Conditional Relationships (AssignedNotation)
 
 The `ASSIGNED_NOTATION` entity's foreign keys are conditionally required based
@@ -443,7 +441,6 @@ The following entities use JSONB for flexible structured data:
 
 For detailed information on specific entities:
 
-- State machine transitions: See `ASSIGNED_NOTATION_STATE_MACHINE.md`
 - Migration history: See `Sources/HarnessDAL/Migrations/`
 - Seed data: See `Sources/HarnessDAL/Seeds/`
 - Model implementations: See `Sources/HarnessDAL/Models/`
